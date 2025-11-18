@@ -1,9 +1,16 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Geist } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 const geist = Geist({ subsets: ["latin"] });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
 
 export const metadata: Metadata = {
   title: '어느날 - 치매 예방 탐지 서비스',
@@ -34,8 +41,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="ko">
-      <body className={`${geist.className} antialiased`}>
+    <html lang="ko" style={{ scrollbarGutter: 'stable' }}>
+      <body className={`${geist.className} antialiased overflow-x-hidden`}>
         {children}
         <Analytics />
       </body>
