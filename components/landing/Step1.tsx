@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function Step1() {
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-gradient-to-b from-[#FFEFC3] from-0% to-[#F9F9F9] to-94%">
+    <div className="flex h-screen w-full items-center justify-center bg-gradient-to-b from-[#FFEFC3] from-0% to-[#F9F9F9] to-94% max-w-md mx-auto">
       <Image
         src="/icons/landing/landing-logo.svg"
         alt="여느날 로고"

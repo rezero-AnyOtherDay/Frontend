@@ -22,12 +22,12 @@ interface Step3Props {
 
 export default function Step3({ formData, onFormChange }: Step3Props) {
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center bg-white px-8">
+    <div className="flex h-screen w-full flex-col items-center justify-center bg-white px-4 max-w-md mx-auto">
       <h1 className="mb-8 text-center text-2xl font-bold text-gray-800">
         여느날을 함께할 사람을 알려주세요
       </h1>
 
-      <div className="w-full max-w-md space-y-6">
+      <div className="w-full space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">이름</Label>
           <Input
@@ -40,7 +40,10 @@ export default function Step3({ formData, onFormChange }: Step3Props) {
 
         <div className="space-y-2">
           <Label htmlFor="gender">성별</Label>
-          <Select value={formData.gender} onValueChange={(value) => onFormChange("gender", value)}>
+          <Select
+            value={formData.gender}
+            onValueChange={(value) => onFormChange("gender", value)}
+          >
             <SelectTrigger id="gender">
               <SelectValue placeholder="성별을 선택하세요" />
             </SelectTrigger>
@@ -63,7 +66,10 @@ export default function Step3({ formData, onFormChange }: Step3Props) {
 
         <div className="space-y-2">
           <Label htmlFor="relationship">관계</Label>
-          <Select value={formData.relationship} onValueChange={(value) => onFormChange("relationship", value)}>
+          <Select
+            value={formData.relationship}
+            onValueChange={(value) => onFormChange("relationship", value)}
+          >
             <SelectTrigger id="relationship">
               <SelectValue placeholder="관계를 선택하세요" />
             </SelectTrigger>
