@@ -28,7 +28,7 @@
   --chart-3: #FDEEEE;
   --chart-4: #979EA1;
   --chart-5: #EBF2F8;
-  --radius: 1rem;
+  --radius: 0.9375rem;
 }
 
 @theme inline {
@@ -70,5 +70,14 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Hide scrollbar while keeping functionality */
+  main::-webkit-scrollbar {
+    display: none;
+  }
+  main {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
