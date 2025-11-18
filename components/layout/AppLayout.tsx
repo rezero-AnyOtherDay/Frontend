@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import BottomNavigation from '@/components/navigation/BottomNavigation'
-import React from 'react'
+import BottomNavigation from "@/components/navigation/BottomNavigation";
+import React from "react";
 
 interface AppLayoutProps {
-  children: React.ReactNode
-  hasHeader?: boolean
-  headerContent?: React.ReactNode
-  showNavigation?: boolean
+  children: React.ReactNode;
+  hasHeader?: boolean;
+  headerContent?: React.ReactNode;
+  showNavigation?: boolean;
 }
 
 export default function AppLayout({
@@ -20,7 +20,7 @@ export default function AppLayout({
     <div className="w-full h-screen flex flex-col max-w-md mx-auto bg-background">
       {/* Header */}
       {hasHeader && headerContent && (
-        <header className="sticky top-0 z-40 bg-background border-b border-border flex-shrink-0">
+        <header className="sticky top-0 z-40 bg-background shrink-0">
           {headerContent}
         </header>
       )}
@@ -33,5 +33,5 @@ export default function AppLayout({
       {/* Bottom Navigation - fixed at bottom */}
       {showNavigation && <BottomNavigation />}
     </div>
-  )
+  );
 }

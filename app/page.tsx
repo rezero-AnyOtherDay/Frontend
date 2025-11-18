@@ -18,7 +18,7 @@ export default function HomePage() {
   const router = useRouter();
 
   // 예시 데이터
-  const userName = "육순";
+  const userName = "옥순";
   const daysWithoutCall = 10;
   const recentStatus = "뇌졸중";
   const alertCount = 3;
@@ -37,7 +37,7 @@ export default function HomePage() {
   };
 
   const headerContent = (
-    <div className="flex items-center justify-between px-4 py-3 max-w-md mx-auto w-full">
+    <div className="flex items-center justify-between px-6 pt-4 pb-2 max-w-md mx-auto w-full">
       <div className="flex items-center gap-2">
         <Image
           src="/icons/home/home-logo.svg"
@@ -72,17 +72,17 @@ export default function HomePage() {
     <AppLayout hasHeader={true} headerContent={headerContent}>
       <div className="px-4 py-4 space-y-4 max-w-md mx-auto w-full">
         {showAlert && (
-          <Card className="bg-card border-0 p-4 rounded relative">
+          <Card className="bg-card border-0 p-4 rounded-md shadow-none relative">
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-2 right-2 text-muted-foreground h-6 w-6"
+              className="absolute top-2 right-2 text-muted-foreground h-6 w-6 rounded-md shadow-none"
               onClick={() => setShowAlert(false)}
             >
               <X className="h-4 w-4" />
             </Button>
-            <div className="flex items-start gap-3">
-              <div className="shrink-0">
+            <div className="relative">
+              <div className="absolute left-0 top-1/2 -translate-y-1/2">
                 <Image
                   src="/icons/home/home-call.svg"
                   alt="통화"
@@ -90,16 +90,19 @@ export default function HomePage() {
                   height={32}
                 />
               </div>
-              <div className="flex-1">
+              <div className="text-center">
                 <h3
-                  className="font-semibold text-base mb-1"
+                  className="font-semibold text-base"
                   style={{ color: "#4291F1", fontSize: "16px" }}
                 >
                   오늘 {userName}님과 통화 어떠세요?
                 </h3>
                 <p
                   className="text-sm"
-                  style={{ color: "#979EA1", fontSize: "12px" }}
+                  style={{
+                    color: "#979EA1",
+                    fontSize: "12px"
+                  }}
                 >
                   {daysWithoutCall}일간 통화하지 않았어요
                 </p>
@@ -108,26 +111,23 @@ export default function HomePage() {
           </Card>
         )}
 
-        <Card className="bg-card border-0 p-5 rounded">
-          <div className="text-center space-y-4">
+        <Card className="bg-card border-0 p-5 rounded-md shadow-none">
+          <div className="text-center">
             <p style={{ fontSize: "14px", color: "#979EA1" }}>최근 결과</p>
-            <div className="space-y-2">
-              <h2
-                className="leading-relaxed"
-                style={{ fontSize: "20px", color: "#303233" }}
-              >
+            <div style={{ marginTop: "5px" }}>
+              <h2 style={{ fontSize: "20px", color: "#303233" }}>
                 최근 {userName}님의 상태는
               </h2>
-              <h2
-                className="font-bold leading-relaxed"
-                style={{ fontSize: "28px" }}
-              >
+              <h2 className="font-bold" style={{ fontSize: "28px" }}>
                 <span className="text-primary">{recentStatus}</span>
                 <span style={{ color: "#303233" }}>이 의심돼요</span>
               </h2>
             </div>
 
-            <div className="flex justify-center py-4">
+            <div
+              className="flex justify-center"
+              style={{ marginTop: "5px", marginLeft: "8px" }}
+            >
               <Image
                 src="/icons/home/home-warning.svg"
                 alt="경고"
@@ -137,9 +137,12 @@ export default function HomePage() {
             </div>
 
             <Link href="/report">
-              <Card className="bg-destructive border-0 p-3.5 rounded cursor-pointer hover:opacity-90 transition-opacity">
+              <Card
+                className="bg-destructive border-0 p-3.5 rounded-md cursor-pointer hover:opacity-90 transition-opacity shadow-none"
+                style={{ marginTop: "5px" }}
+              >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-destructive-foreground">
+                  <span className="text-md font-medium text-destructive-foreground">
                     주의 할 내용
                   </span>
                   <div className="flex items-center gap-2">
@@ -154,27 +157,22 @@ export default function HomePage() {
           </div>
         </Card>
 
-        <Card className="bg-card border-0 p-5 rounded">
-          <div className="text-center space-y-4">
+        <Card className="bg-card border-0 p-5 rounded-md shadow-none">
+          <div className="text-center">
             <p style={{ fontSize: "14px", color: "#979EA1" }}>뇌질환 확인</p>
-            <div className="space-y-1">
-              <p
-                className="leading-relaxed"
-                style={{ fontSize: "20px", color: "#303233" }}
-              >
+            <div style={{ marginTop: "5px" }}>
+              <p style={{ fontSize: "20px", color: "#303233" }}>
                 {userName}님과의 통화로
               </p>
-              <p
-                className="font-bold leading-relaxed"
-                style={{ fontSize: "28px" }}
-              >
+              <p className="font-bold" style={{ fontSize: "28px" }}>
                 <span className="text-primary">위험도</span>
                 <span style={{ color: "#303233" }}>를 알아봐요</span>
               </p>
             </div>
             <Button
               onClick={() => setShowUploadModal(true)}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-6 rounded text-base"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-5 rounded-full shadow-none"
+              style={{ marginTop: "20px", fontSize: "20px" }}
             >
               업로드하기
             </Button>
@@ -184,7 +182,7 @@ export default function HomePage() {
 
       {showUploadModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="bg-white w-full max-w-sm p-6 rounded">
+          <Card className="bg-white w-full max-w-sm p-6 rounded-md shadow-none">
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-foreground">
@@ -197,14 +195,14 @@ export default function HomePage() {
                     setShowUploadModal(false);
                     setSelectedFile(null);
                   }}
-                  className="h-8 w-8"
+                  className="h-8 w-8 rounded-md shadow-none"
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
 
               <div className="space-y-4">
-                <div className="border-2 border-dashed border-border rounded p-8 text-center">
+                <div className="border-2 border-dashed border-border rounded-md p-8 text-center">
                   <input
                     type="file"
                     accept="audio/*,.mp3,.wav,.m4a"
@@ -229,7 +227,7 @@ export default function HomePage() {
                 </div>
 
                 {selectedFile && (
-                  <div className="bg-muted p-3 rounded">
+                  <div className="bg-muted p-3 rounded-md">
                     <p className="text-sm font-medium text-foreground truncate">
                       {selectedFile.name}
                     </p>
@@ -242,7 +240,8 @@ export default function HomePage() {
                 <Button
                   onClick={handleUpload}
                   disabled={!selectedFile}
-                  className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded disabled:opacity-50"
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-full disabled:opacity-50 shadow-none"
+                  style={{ fontSize: "20px" }}
                 >
                   업로드
                 </Button>
@@ -254,7 +253,7 @@ export default function HomePage() {
 
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="bg-white w-full max-w-sm p-6 rounded">
+          <Card className="bg-white w-full max-w-sm p-6 rounded-md shadow-none">
             <div className="space-y-6">
               <h2 className="text-lg font-semibold text-foreground text-center">
                 자가진단표를 수정할까요?
@@ -262,7 +261,8 @@ export default function HomePage() {
 
               <div className="flex gap-3">
                 <Button
-                  className="flex-1 bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded"
+                  className="flex-1 bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-full shadow-none"
+                  style={{ fontSize: "20px" }}
                   onClick={() => {
                     setShowConfirmModal(false);
                     router.push("/self-diagnosis");
@@ -272,7 +272,7 @@ export default function HomePage() {
                 </Button>
                 <Button
                   variant="secondary"
-                  className="flex-1 bg-[#E0E0E0] hover:bg-[#D0D0D0] text-foreground font-medium py-3 rounded"
+                  className="flex-1 bg-[#E0E0E0] hover:bg-[#D0D0D0] text-foreground font-medium py-3 rounded-md shadow-none"
                   onClick={() => {
                     setShowConfirmModal(false);
                     router.push("/loading");
