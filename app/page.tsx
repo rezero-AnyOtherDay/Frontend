@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { User, Bell, Phone, AlertTriangle, ChevronRight, X, Upload } from 'lucide-react'
+import { ChevronRight, X, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import AppLayout from '@/components/layout/AppLayout'
+import Image from 'next/image'
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState('home')
@@ -36,17 +37,17 @@ export default function HomePage() {
   }
 
   const headerContent = (
-    <div className="flex items-center justify-between px-4 py-3 max-w-md mx-auto">
+    <div className="flex items-center justify-between px-4 py-3 max-w-md mx-auto w-full">
       <div className="flex items-center gap-2">
-        <span className="text-lg font-bold text-foreground">여느날</span>
+        <Image src="/icons/home/home-logo.svg" alt="어느날 로고" width={71} height={35} />
         <div className="w-3 h-3 rounded-full bg-accent"></div>
       </div>
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" className="text-secondary">
-          <User className="h-5 w-5" />
+        <Button variant="ghost" size="icon" className="p-0">
+          <Image src="/icons/home/home-mypage.svg" alt="마이페이지" width={20} height={20} />
         </Button>
-        <Button variant="ghost" size="icon" className="text-secondary relative">
-          <Bell className="h-5 w-5" />
+        <Button variant="ghost" size="icon" className="p-0 relative">
+          <Image src="/icons/home/home-alarm.svg" alt="알림" width={20} height={22} />
           <span className="absolute top-1 right-1 w-2 h-2 bg-destructive-foreground rounded-full"></span>
         </Button>
       </div>
@@ -67,8 +68,8 @@ export default function HomePage() {
               <X className="h-4 w-4" />
             </Button>
             <div className="flex items-start gap-3">
-              <div className="bg-primary/10 rounded-full p-2.5">
-                <Phone className="h-5 w-5 text-primary" />
+              <div className="flex-shrink-0">
+                <Image src="/icons/home/home-call.svg" alt="통화" width={24} height={32} />
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-base text-foreground mb-1">
@@ -95,15 +96,7 @@ export default function HomePage() {
             </div>
 
             <div className="flex justify-center py-4">
-              <div className="relative">
-                <AlertTriangle className="h-24 w-24 text-destructive-foreground fill-destructive" />
-                <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-1.5">
-                  <svg className="h-8 w-8 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" strokeWidth="2"/>
-                    <path d="M15 9l-6 6M9 9l6 6" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                </div>
-              </div>
+              <Image src="/icons/home/home-warning.svg" alt="경고" width={162} height={126} />
             </div>
 
             <Link href="/report">
