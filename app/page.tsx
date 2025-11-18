@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Home, List, MessageCircle, ClipboardList, User, Bell, Phone, AlertTriangle, ChevronRight, X, Upload } from 'lucide-react'
+import { User, Bell, Phone, AlertTriangle, ChevronRight, X, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import AppLayout from '@/components/layout/AppLayout'
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState('home')
@@ -34,31 +35,29 @@ export default function HomePage() {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-background pb-20">
-      {/* 헤더 */}
-      <header className="sticky top-0 z-50 bg-background px-4 py-3">
-        <div className="flex items-center justify-between max-w-md mx-auto">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-bold text-foreground">여느날</span>
-            <div className="w-3 h-3 rounded-full bg-accent"></div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="text-secondary">
-              <User className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="text-secondary relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-destructive-foreground rounded-full"></span>
-            </Button>
-          </div>
-        </div>
-      </header>
+  const headerContent = (
+    <div className="flex items-center justify-between px-4 py-3 max-w-md mx-auto">
+      <div className="flex items-center gap-2">
+        <span className="text-lg font-bold text-foreground">여느날</span>
+        <div className="w-3 h-3 rounded-full bg-accent"></div>
+      </div>
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" size="icon" className="text-secondary">
+          <User className="h-5 w-5" />
+        </Button>
+        <Button variant="ghost" size="icon" className="text-secondary relative">
+          <Bell className="h-5 w-5" />
+          <span className="absolute top-1 right-1 w-2 h-2 bg-destructive-foreground rounded-full"></span>
+        </Button>
+      </div>
+    </div>
+  )
 
-      {/* 메인 컨텐츠 */}
-      <main className="max-w-md mx-auto px-4 pt-4 pb-6 space-y-4">
+  return (
+    <AppLayout hasHeader={true} headerContent={headerContent}>
+      <div className="px-4 py-4 space-y-4 max-w-md mx-auto w-full">
         {showAlert && (
-          <Card className="bg-card border-0 p-4 rounded-sm relative">
+          <Card className="bg-card border-0 p-4 rounded relative">
             <Button
               variant="ghost"
               size="icon"
@@ -83,7 +82,7 @@ export default function HomePage() {
           </Card>
         )}
 
-        <Card className="bg-card border-0 p-5 rounded-sm">
+        <Card className="bg-card border-0 p-5 rounded">
           <div className="text-center space-y-4">
             <p className="text-sm text-muted-foreground">최근 결과</p>
             <div className="space-y-2">
@@ -108,7 +107,7 @@ export default function HomePage() {
             </div>
 
             <Link href="/report">
-              <Card className="bg-destructive border-0 p-3.5 rounded-sm cursor-pointer hover:opacity-90 transition-opacity">
+              <Card className="bg-destructive border-0 p-3.5 rounded cursor-pointer hover:opacity-90 transition-opacity">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-destructive-foreground">
                     주의 할 내용
@@ -125,7 +124,7 @@ export default function HomePage() {
           </div>
         </Card>
 
-        <Card className="bg-card border-0 p-5 rounded-sm">
+        <Card className="bg-card border-0 p-5 rounded">
           <div className="text-center space-y-4">
             <p className="text-sm text-muted-foreground">녹음된 확인</p>
             <div className="space-y-1">
@@ -138,17 +137,17 @@ export default function HomePage() {
             </div>
             <Button 
               onClick={() => setShowUploadModal(true)}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-6 rounded-sm text-base"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-6 rounded text-base"
             >
               업로드하기
             </Button>
           </div>
         </Card>
-      </main>
+      </div>
 
       {showUploadModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="bg-white w-full max-w-sm p-6 rounded-sm">
+          <Card className="bg-white w-full max-w-sm p-6 rounded">
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-foreground">
@@ -168,7 +167,7 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-4">
-                <div className="border-2 border-dashed border-border rounded-sm p-8 text-center">
+                <div className="border-2 border-dashed border-border rounded p-8 text-center">
                   <input
                     type="file"
                     accept="audio/*,.mp3,.wav,.m4a"
@@ -193,7 +192,7 @@ export default function HomePage() {
                 </div>
 
                 {selectedFile && (
-                  <div className="bg-muted p-3 rounded-sm">
+                  <div className="bg-muted p-3 rounded">
                     <p className="text-sm font-medium text-foreground truncate">
                       {selectedFile.name}
                     </p>
@@ -206,7 +205,7 @@ export default function HomePage() {
                 <Button
                   onClick={handleUpload}
                   disabled={!selectedFile}
-                  className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-sm disabled:opacity-50"
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded disabled:opacity-50"
                 >
                   업로드
                 </Button>
@@ -218,7 +217,7 @@ export default function HomePage() {
 
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="bg-white w-full max-w-sm p-6 rounded-sm">
+          <Card className="bg-white w-full max-w-sm p-6 rounded">
             <div className="space-y-6">
               <h2 className="text-lg font-semibold text-foreground text-center">
                 자가진단표를 수정할까요?
@@ -226,7 +225,7 @@ export default function HomePage() {
 
               <div className="flex gap-3">
                 <Button
-                  className="flex-1 bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-sm"
+                  className="flex-1 bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded"
                   onClick={() => {
                     setShowConfirmModal(false)
                     router.push('/self-diagnosis')
@@ -236,7 +235,7 @@ export default function HomePage() {
                 </Button>
                 <Button
                   variant="secondary"
-                  className="flex-1 bg-[#E0E0E0] hover:bg-[#D0D0D0] text-foreground font-medium py-3 rounded-sm"
+                  className="flex-1 bg-[#E0E0E0] hover:bg-[#D0D0D0] text-foreground font-medium py-3 rounded"
                   onClick={() => {
                     setShowConfirmModal(false)
                     router.push('/loading')
@@ -249,52 +248,6 @@ export default function HomePage() {
           </Card>
         </div>
       )}
-
-      {/* 하단 네비게이션 바 */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-border">
-        <div className="max-w-md mx-auto flex items-center justify-around py-3 px-4">
-          <Link
-            href="/"
-            className={`flex flex-col items-center gap-1 ${
-              activeTab === 'home' ? 'text-primary' : 'text-secondary'
-            }`}
-            onClick={() => setActiveTab('home')}
-          >
-            <Home className="h-6 w-6" />
-            <span className="text-xs font-medium">홈</span>
-          </Link>
-          <Link
-            href="/list"
-            className={`flex flex-col items-center gap-1 ${
-              activeTab === 'list' ? 'text-primary' : 'text-secondary'
-            }`}
-            onClick={() => setActiveTab('list')}
-          >
-            <List className="h-6 w-6" />
-            <span className="text-xs font-medium">리스트</span>
-          </Link>
-          <Link
-            href="/consultation"
-            className={`flex flex-col items-center gap-1 ${
-              activeTab === 'consultation' ? 'text-primary' : 'text-secondary'
-            }`}
-            onClick={() => setActiveTab('consultation')}
-          >
-            <MessageCircle className="h-6 w-6" />
-            <span className="text-xs font-medium">상담</span>
-          </Link>
-          <Link
-            href="/test"
-            className={`flex flex-col items-center gap-1 ${
-              activeTab === 'test' ? 'text-primary' : 'text-secondary'
-            }`}
-            onClick={() => setActiveTab('test')}
-          >
-            <ClipboardList className="h-6 w-6" />
-            <span className="text-xs font-medium">테스트</span>
-          </Link>
-        </div>
-      </nav>
-    </div>
+    </AppLayout>
   )
 }

@@ -2,20 +2,22 @@
 
 import { ChevronLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import AppLayout from '@/components/layout/AppLayout'
 
 export default function ReportPage() {
   const router = useRouter()
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background p-4">
-        <button onClick={() => router.push('/list')} className="text-foreground">
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-      </header>
+  const headerContent = (
+    <div className="px-4 py-3 max-w-md mx-auto">
+      <button onClick={() => router.push('/list')} className="text-foreground">
+        <ChevronLeft className="w-6 h-6" />
+      </button>
+    </div>
+  )
 
-      <div className="px-4 pb-6">
+  return (
+    <AppLayout hasHeader={true} headerContent={headerContent}>
+      <div className="px-4 py-4 max-w-md mx-auto w-full">
         {/* Main Result */}
         <div className="mb-6">
           <h1 className="text-xl font-bold text-foreground mb-2">
@@ -25,7 +27,7 @@ export default function ReportPage() {
         </div>
 
         {/* Results Summary Card */}
-        <div className="bg-white p-5 rounded-sm mb-4">
+        <div className="bg-white p-5 rounded mb-4">
           <p className="text-sm text-foreground mb-3">
             뇌졸중일 확률은 <span className="font-semibold">00%</span>, 퇴행성
             뇌질환일 확률은 <span className="font-semibold">00%</span>, 문제 없음일
@@ -57,7 +59,7 @@ export default function ReportPage() {
                   <tr className="border-b border-gray-300">
                     <td className="py-2 px-3 border-r border-gray-300">뇌졸중</td>
                     <td className="py-2 px-3 text-center border-r border-gray-300">
-                      <span className="inline-block bg-yellow-400 text-white text-xs px-2 py-1 rounded-sm">
+                      <span className="inline-block bg-yellow-400 text-white text-xs px-2 py-1 rounded">
                         관심
                       </span>
                     </td>
@@ -66,7 +68,7 @@ export default function ReportPage() {
                   <tr className="border-b border-gray-300">
                     <td className="py-2 px-3 border-r border-gray-300">치매</td>
                     <td className="py-2 px-3 text-center border-r border-gray-300">
-                      <span className="inline-block bg-orange-500 text-white text-xs px-2 py-1 rounded-sm">
+                      <span className="inline-block bg-orange-500 text-white text-xs px-2 py-1 rounded">
                         주의
                       </span>
                     </td>
@@ -75,7 +77,7 @@ export default function ReportPage() {
                   <tr className="border-b border-gray-300">
                     <td className="py-2 px-3 border-r border-gray-300">파킨슨병</td>
                     <td className="py-2 px-3 text-center border-r border-gray-300">
-                      <span className="inline-block bg-red-500 text-white text-xs px-2 py-1 rounded-sm">
+                      <span className="inline-block bg-red-500 text-white text-xs px-2 py-1 rounded">
                         위험
                       </span>
                     </td>
@@ -84,7 +86,7 @@ export default function ReportPage() {
                   <tr>
                     <td className="py-2 px-3 border-r border-gray-300">우울/불안</td>
                     <td className="py-2 px-3 text-center border-r border-gray-300">
-                      <span className="inline-block bg-green-500 text-white text-xs px-2 py-1 rounded-sm">
+                      <span className="inline-block bg-green-500 text-white text-xs px-2 py-1 rounded">
                         정상
                       </span>
                     </td>
@@ -100,7 +102,7 @@ export default function ReportPage() {
         </div>
 
         {/* High Risk Disease Card - 뇌졸중 */}
-        <div className="bg-white p-5 rounded-sm mb-4">
+        <div className="bg-white p-5 rounded mb-4">
           <div className="flex items-start justify-between mb-3">
             <div>
               <span className="inline-block bg-red-500 text-white text-xs px-3 py-1 rounded-full mb-2">
@@ -124,14 +126,14 @@ export default function ReportPage() {
           </ul>
           <button
             onClick={() => router.push('/?tab=consultation')}
-            className="w-full bg-[#4291F2] text-white py-3 rounded-sm font-medium"
+            className="w-full bg-[#4291F2] text-white py-3 rounded font-medium"
           >
             상담하러가기
           </button>
         </div>
 
         {/* Warning Disease Card - 치매 */}
-        <div className="bg-white p-5 rounded-sm mb-4">
+        <div className="bg-white p-5 rounded mb-4">
           <div className="flex items-start justify-between mb-3">
             <div>
               <span className="inline-block bg-orange-500 text-white text-xs px-3 py-1 rounded-full mb-2">
@@ -158,13 +160,13 @@ export default function ReportPage() {
       </div>
 
       {/* Recommended Follow-up Actions Section */}
-      <div className="bg-[#4291F2] px-4 pt-8 pb-20">
+      <div className="bg-[#4291F2] px-4 py-8 max-w-md mx-auto w-full">
         <h2 className="text-xl font-bold text-white text-center mb-6">
           권장 후속조치
         </h2>
 
         {/* Re-measure Card */}
-        <div className="bg-white p-5 rounded-sm mb-4">
+        <div className="bg-white p-5 rounded mb-4">
           <h3 className="text-lg font-bold text-foreground mb-3 text-center">
             다시 측정하기
           </h3>
@@ -173,13 +175,13 @@ export default function ReportPage() {
             <br />
             서비스 분석화가 이어진 리포트 기반 체계적으로 모든 관찰
           </p>
-          <button className="w-full bg-[#4291F2] text-white py-3 rounded-sm font-medium">
+          <button className="w-full bg-[#4291F2] text-white py-3 rounded font-medium">
             2주 뒤 알림 신청
           </button>
         </div>
 
         {/* Additional Test Card */}
-        <div className="bg-white p-5 rounded-sm mb-4">
+        <div className="bg-white p-5 rounded mb-4">
           <h3 className="text-lg font-bold text-foreground mb-3 text-center">
             추가 테스트
           </h3>
@@ -188,24 +190,24 @@ export default function ReportPage() {
             <br />
             간단한 자가기저테스트(숫자 자구로 받힘기)
           </p>
-          <button className="w-full bg-[#4291F2] text-white py-3 rounded-sm font-medium">
+          <button className="w-full bg-[#4291F2] text-white py-3 rounded font-medium">
             테스트 하러가기
           </button>
         </div>
 
         {/* Expert Connection Card */}
-        <div className="bg-white p-5 rounded-sm mb-4">
+        <div className="bg-white p-5 rounded mb-4">
           <h3 className="text-lg font-bold text-foreground mb-3 text-center">
             전문가 연결하기
           </h3>
           <button
             onClick={() => router.push('/?tab=consultation')}
-            className="w-full bg-[#4291F2] text-white py-3 rounded-sm font-medium"
+            className="w-full bg-[#4291F2] text-white py-3 rounded font-medium"
           >
             상담하러가기
           </button>
         </div>
       </div>
-    </div>
+    </AppLayout>
   )
 }
