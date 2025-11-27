@@ -15,6 +15,7 @@ export default function HomePage() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isReportReady] = useState(false);
   const router = useRouter();
 
   // 예시 데이터
@@ -72,41 +73,41 @@ export default function HomePage() {
     <AppLayout hasHeader={true} headerContent={headerContent}>
       <div className="px-4 py-4 space-y-4 max-w-md mx-auto w-full">
         {showAlert && (
-          <Card className="bg-card border-0 p-4 rounded-md shadow-none relative">
+          <Card
+            className={`border-0 p-5 rounded-md shadow-none relative ${
+              isReportReady ? "bg-primary" : "bg-white"
+            }`}
+          >
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-2 right-2 text-muted-foreground h-6 w-6 rounded-md shadow-none"
+              className={`absolute top-2 right-2 h-6 w-6 rounded-md shadow-none ${
+                isReportReady ? "text-white" : "text-muted-foreground"
+              }`}
               onClick={() => setShowAlert(false)}
             >
               <X className="h-4 w-4" />
             </Button>
-            <div className="relative">
-              <div className="absolute left-0 top-1/2 -translate-y-1/2">
-                <Image
-                  src="/icons/home/home-call.svg"
-                  alt="통화"
-                  width={24}
-                  height={32}
-                />
-              </div>
-              <div className="text-center">
-                <h3
-                  className="font-semibold text-base"
-                  style={{ color: "#4291F1", fontSize: "16px" }}
-                >
-                  오늘 {userName}님과 통화 어떠세요?
-                </h3>
-                <p
-                  className="text-sm"
-                  style={{
-                    color: "#979EA1",
-                    fontSize: "12px",
-                  }}
-                >
-                  {daysWithoutCall}일간 통화하지 않았어요
-                </p>
-              </div>
+            <div className="text-center space-y-0">
+              {!isReportReady ? (
+                <>
+                  <h3 className="font-semibold text-lg text-primary leading-tight">
+                    상세 분석 리포트를 준비중이에요!
+                  </h3>
+                  <p className="text-base text-muted-foreground leading-tight">
+                    조금만 기다려 주시면 금방 준비 돼요
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h3 className="font-semibold text-lg text-white leading-tight">
+                    상세 분석 리포트가 준비 됐어요!
+                  </h3>
+                  <p className="text-base text-white/80 leading-tight">
+                    지금 확인하러 가볼까요?
+                  </p>
+                </>
+              )}
             </div>
           </Card>
         )}
