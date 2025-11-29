@@ -15,14 +15,21 @@ import { cn } from "@/lib/utils";
 interface Step3Props {
   formData: {
     name: string;
-    gender: string;
+    gender: "male" | "female" | "";
     birthDate: string;
     relationship: string;
   };
   onFormChange: (field: string, value: string) => void;
+  isSubmitting?: boolean;
+  errorMessage?: string | null;
 }
 
-export default function Step3({ formData, onFormChange }: Step3Props) {
+export default function Step3({
+  formData,
+  onFormChange,
+  isSubmitting = false,
+  errorMessage,
+}: Step3Props) {
   const genderOptions = [
     { value: "male", label: "남자" },
     { value: "female", label: "여자" },
@@ -195,6 +202,14 @@ export default function Step3({ formData, onFormChange }: Step3Props) {
             </div>
           </div>
         </div>
+        {errorMessage && (
+          <p className="text-center text-sm text-red-500">{errorMessage}</p>
+        )}
+        {isSubmitting && (
+          <p className="text-center text-sm text-[#9AA5BE]">
+            피보호자 정보를 저장하는 중...
+          </p>
+        )}
       </div>
     </div>
   );
