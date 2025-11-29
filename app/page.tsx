@@ -25,7 +25,7 @@ export default function HomePage() {
   const router = useRouter();
 
   // 예시 데이터
-  const [userName, setUserName] = useState("옥순");
+  const [userName, setUserName] = useState("");
   const daysWithoutCall = 10;
   const [recentStatus, setRecentStatus] = useState("뇌졸중");
   const alertCount = 3;
@@ -280,7 +280,7 @@ export default function HomePage() {
             <p style={{ fontSize: "14px", color: "#979EA1" }}>최근 결과</p>
             <div style={{ marginTop: "5px" }}>
               <h2 style={{ fontSize: "20px", color: "#303233" }}>
-                최근 {userName}님의 상태는
+                최근 {userName ? `${userName}님의` : ""} 상태는
               </h2>
               <h2 className="font-bold" style={{ fontSize: "28px" }}>
                 <span className="text-primary">{recentStatus}</span>
@@ -326,7 +326,7 @@ export default function HomePage() {
             <p style={{ fontSize: "14px", color: "#979EA1" }}>뇌질환 확인</p>
             <div style={{ marginTop: "5px" }}>
               <p style={{ fontSize: "20px", color: "#303233" }}>
-                {userName}님과의 통화로
+                {userName ? `${userName}님과의` : ""} 통화로
               </p>
               <p className="font-bold" style={{ fontSize: "28px" }}>
                 <span className="text-primary">위험도</span>
@@ -379,6 +379,7 @@ export default function HomePage() {
                   onClick={() => {
                     setShowUploadModal(false);
                     setSelectedFile(null);
+                    setUploadError(null);
                   }}
                   className="h-8 w-8 rounded-md shadow-none"
                 >
@@ -387,6 +388,12 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-4">
+                {uploadError && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                    {uploadError}
+                  </div>
+                )}
+
                 <div className="border-2 border-dashed border-border rounded-md p-8 text-center">
                   <input
                     type="file"

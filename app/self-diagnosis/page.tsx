@@ -11,7 +11,7 @@ export default function SelfDiagnosisPage() {
   // Step 4 설문 답변 (5개 질문, 각 0-4 값, -1은 미선택)
   const [surveyAnswers, setSurveyAnswers] = useState<number[]>([2, 2, 2, 2, 2]);
   // 사용자 이름 (localStorage에서 가져오거나 기본값)
-  const [userName, setUserName] = useState("옥순");
+  const [userName, setUserName] = useState("");
 
   // localStorage에서 이전 설문 답변 불러오기
   useEffect(() => {

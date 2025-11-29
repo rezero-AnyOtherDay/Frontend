@@ -1,11 +1,23 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { MapPin, Phone, Clock, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import AppLayout from "@/components/layout/AppLayout";
 
 export default function ConsultationPage() {
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedUserName = localStorage.getItem("userName");
+      if (storedUserName) {
+        setUserName(storedUserName);
+      }
+    }
+  }, []);
+
   const hospitals = [
     {
       id: 1,
@@ -36,7 +48,9 @@ export default function ConsultationPage() {
   const headerContent = (
     <div className="px-4 py-6 max-w-md mx-auto">
       <h1 className="text-xl font-bold text-foreground">
-        옥순 님에게 도움이 필요한가요?
+        {userName
+          ? `${userName} 님에게 도움이 필요한가요?`
+          : "도움이 필요한가요?"}
       </h1>
     </div>
   );
