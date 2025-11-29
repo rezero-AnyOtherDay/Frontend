@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X, Upload } from "lucide-react";
-import { wardAPI } from "@/lib/api";
+import { wardAPI, audioAPI } from "@/lib/api";
 
 type WardFormData = {
   name: string;
@@ -57,8 +57,25 @@ export default function LandingPage() {
   // Step 3 ward 정보
   const [wardId, setWardId] = useState<number | null>(null);
 
-  // Step 4 설문 답변 (5개 질문, 각 0-4 값)
-  const [surveyAnswers, setSurveyAnswers] = useState<number[]>([2, 2, 2, 2, 2]);
+  // Step 3 상태
+  const [wardSubmissionError, setWardSubmissionError] = useState<string | null>(
+    null,
+  );
+  const [isCreatingWard, setIsCreatingWard] = useState(false);
+
+  // Step 4 상태
+  const [isUpdatingDiagnosis, setIsUpdatingDiagnosis] = useState(false);
+  const [diagnosisError, setDiagnosisError] = useState<string | null>(null);
+
+  // 업로드/레코드 상태
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [recordId, setRecordId] = useState<number | null>(null);
+
+  // Step 4 설문 답변 (20개 질문, 각 0-4 값, 기본 2=아니다)
+  const [surveyAnswers, setSurveyAnswers] = useState<number[]>(
+    Array(20).fill(2),
+  );
 
   // 자동 진행 (Step 1, 2는 3초 후 자동 진행)
   useEffect(() => {
@@ -90,6 +107,58 @@ export default function LandingPage() {
       return updated;
     });
     setWardSubmissionError(null);
+  };
+
+  const handleWardSubmit = async () => {
+    if (!formData.name || !formData.gender || !formData.birthDate) {
+      return;
+    }
+
+    if (isCreatingWard) return;
+
+    setIsCreatingWard(true);
+    setWardSubmissionError(null);
+
+    try {
+      const age = calculateAge(formData.birthDate);
+      const payload = {
+        guardianId: DUMMY_GUARDIAN.id,
+        name: formData.name,
+        age,
+        gender: formData.gender as "male" | "female",
+        phone: DUMMY_GUARDIAN.phone,
+        relationship: formData.relationship,
+        diagnosis: JSON.stringify({
+          source: "onboarding",
+          relationship: formData.relationship,
+        }),
+      };
+
+      const response = await wardAPI.createWard(payload);
+      const createdWardId = response?.wardId ?? response?.id ?? null;
+
+      if (createdWardId) {
+        setWardId(createdWardId);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("wardId", String(createdWardId));
+        }
+      }
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("wardProfile", JSON.stringify(payload));
+      }
+
+      setCurrentStep(4);
+    } catch (error) {
+      console.error("피보호자 등록 중 오류 발생:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "피보호자 등록에 실패했습니다.";
+      setWardSubmissionError(message);
+    } finally {
+      setIsCreatingWard(false);
+    }
   };
 
   const handleSurveyAnswerChange = (questionIndex: number, value: number) => {
@@ -185,6 +254,67 @@ export default function LandingPage() {
     }
   };
 
+  const handleAudioUpload = async () => {
+    if (!selectedFile || !wardId) {
+      setUploadError("파일과 피보호자 정보가 모두 필요합니다.");
+      return;
+    }
+
+    setIsUploadingAudio(true);
+    setUploadError(null);
+
+    try {
+      const result = await audioAPI.uploadAudio(wardId, selectedFile);
+      const newRecordId =
+        // 다양한 응답 형태 대응
+        (result as any).data?.recordId ??
+        (result as any).data?.id ??
+        (result as any).recordId ??
+        (result as any).id ??
+        null;
+
+      if (newRecordId) {
+        setRecordId(newRecordId);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("recordId", String(newRecordId));
+        }
+      }
+
+      setShowUploadModal(false);
+      setSelectedFile(null);
+      setCurrentStep(6);
+    } catch (error) {
+      console.error("음성 업로드 실패:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "음성 파일 업로드에 실패했습니다. 다시 시도해주세요.";
+      setUploadError(message);
+    } finally {
+      setIsUploadingAudio(false);
+    }
+  };
+
+  const pollReportCompletion = async (recId: number): Promise<boolean> => {
+    try {
+      const result = await audioAPI.getRecordById(recId);
+      const status =
+        (result as any).data?.status ??
+        (result as any).status ??
+        (result as any).record?.status ??
+        null;
+
+      if (status) {
+        console.log("현재 레코드 상태:", status);
+      }
+
+      return status === "completed";
+    } catch (error) {
+      console.error("리포트 상태 확인 중 오류 발생:", error);
+      return false;
+    }
+  };
+
   const canProceedFromStep3 =
     formData.name &&
     formData.gender &&
@@ -211,8 +341,8 @@ export default function LandingPage() {
           />
           <div className="absolute bottom-8 left-0 right-0 px-4 max-w-md mx-auto">
             <Button
-              onClick={() => setCurrentStep(4)}
-              disabled={!canProceedFromStep3}
+              onClick={handleWardSubmit}
+              disabled={!canProceedFromStep3 || isCreatingWard}
               className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full shadow-none disabled:opacity-50 text-base"
             >
               {isCreatingWard ? "등록 중..." : "다음"}
@@ -231,8 +361,8 @@ export default function LandingPage() {
           />
           <div className="sticky bottom-0 bg-white px-4 py-4 max-w-md mx-auto">
             <Button
-              onClick={() => setCurrentStep(5)}
-              disabled={!canProceedFromStep4}
+              onClick={handleStep4Next}
+              disabled={!canProceedFromStep4 || isUpdatingDiagnosis}
               className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full shadow-none disabled:opacity-50 text-base"
             >
               {isUpdatingDiagnosis ? "저장 중..." : "다음"}
@@ -330,9 +460,12 @@ export default function LandingPage() {
                 <Button
                   onClick={handleUpload}
                   disabled={!selectedFile || isUploadingAudio}
-                  className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-full disabled:opacity-50 shadow-none text-base"
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-full disabled:opacity-50 shadow-none text-base flex items-center justify-center gap-2"
                 >
-                  {isUploadingAudio ? "업로드 중..." : "업로드"}
+                  {isUploadingAudio && (
+                    <span className="inline-block w-4 h-4 border-2 border-white/60 border-t-white rounded-full animate-spin" />
+                  )}
+                  <span>{isUploadingAudio ? "업로드 중..." : "업로드"}</span>
                 </Button>
               </div>
             </div>

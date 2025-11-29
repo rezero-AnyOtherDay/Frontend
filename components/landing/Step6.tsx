@@ -79,11 +79,14 @@ export default function Step6({ recordId, onNext, onPoll }: Step6Props) {
         height={240}
         className="object-contain"
       />
+      {isLoading && recordId && (
+        <div className="mt-6 flex flex-col items-center gap-3">
+          <span className="inline-block w-8 h-8 border-4 border-[#D0DCFF] border-t-[#4F7DFF] rounded-full animate-spin" />
+          <p className="text-sm text-[#9AA5BE]">AI가 분석 중입니다...</p>
+        </div>
+      )}
       {!isLoading && (
         <p className="mt-4 text-sm text-[#9AA5BE]">분석이 완료되었습니다</p>
-      )}
-      {isLoading && recordId && (
-        <p className="mt-4 text-sm text-[#9AA5BE]">AI가 분석 중입니다...</p>
       )}
     </div>
   );

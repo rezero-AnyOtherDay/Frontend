@@ -21,6 +21,7 @@ export default function HomePage() {
   const [recordId, setRecordId] = useState<number | null>(null);
   const [isCheckingReport, setIsCheckingReport] = useState(false);
   const [latestReport, setLatestReport] = useState<any>(null);
+  const isReportReady = !!latestReport;
   const router = useRouter();
 
   // 예시 데이터
@@ -423,10 +424,13 @@ export default function HomePage() {
 
                 <Button
                   onClick={handleUpload}
-                  disabled={!selectedFile}
-                  className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-full disabled:opacity-50 shadow-none text-base"
+                  disabled={!selectedFile || isUploadingAudio}
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-full disabled:opacity-50 shadow-none text-base flex items-center justify-center gap-2"
                 >
-                  업로드
+                  {isUploadingAudio && (
+                    <span className="inline-block w-4 h-4 border-2 border-white/60 border-t-white rounded-full animate-spin" />
+                  )}
+                  <span>{isUploadingAudio ? "업로드 중..." : "업로드"}</span>
                 </Button>
               </div>
             </div>
