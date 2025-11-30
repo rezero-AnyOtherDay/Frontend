@@ -7,14 +7,29 @@ import AppLayout from "@/components/layout/AppLayout";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { audioAPI } from "@/lib/api";
+import { audioAPI, reportAPI } from "@/lib/api";
 
 const surveyQuestions = [
-  "옷 단추를 잠그기 힘들거나 젓가락을 사용하기 어렵다",
-  "물건을 사거나 요금을 지불하는 것이 어렵다",
-  "집안일을 하거나 취미 활동을 하기 어렵다",
-  "대화 중 단어를 떠올리기 어렵거나 말이 막힌다",
-  "오늘 날짜나 요일을 기억하기 어렵다",
+  "손이나 팔에 힘이 빠져 물건을 자주 떨어뜨린다",
+  "평소보다 움직임이 느리거나 동작이 힘들어 보인다",
+  "말이 뭉개지거나 발음이 불명확하다",
+  "음식을 삼키기 어려워하거나 사레가 자주 든다",
+  "가만히 있어도 근육이 떨리거나 경련이 있다",
+  "같은 질문을 반복하거나 방금 일을 자주 잊는다",
+  "간단한 계산이나 익숙한 일을 헷갈려 한다",
+  "익숙한 길이나 장소에서 방향을 잃는다",
+  "단어가 잘 떠오르지 않거나 말이 자주 막힌다",
+  "성격이나 감정이 예전과 다르게 변했다",
+  "손이나 몸이 쉬고 있을 때 떨림이 있다",
+  "걸음이 짧아지거나 보폭이 줄었다",
+  "움직임이 굼뜨고 몸이 굳은 듯하다",
+  "표정 변화가 줄어 무표정해 보인다",
+  "글씨가 전보다 작아지거나 흐려졌다",
+  "얼굴, 팔, 다리 중 한쪽 힘이 갑자기 약해진다",
+  "말이 어눌해지거나 의사소통이 어려워진다",
+  "갑작스럽고 심한 두통을 호소한다",
+  "한쪽 시야가 흐려지거나 잘 보이지 않는 순간이 있다",
+  "어지러워 서있기나 걷기가 어려운 순간이 있다",
 ];
 
 const surveyScaleLabels = [
@@ -134,15 +149,48 @@ export default function ListPage() {
 
       console.log("리포트 조회 wardId:", parsedWardId);
 
-      const result = await audioAPI.getRecordsByWard(parsedWardId);
-      console.log("리포트 조회 응답:", result);
+      // 리포트와 오디오 레코드 동시에 조회
+      const [reportsResult, audioRecordsResult] = await Promise.all([
+        reportAPI.getReportsByWard(parsedWardId),
+        audioAPI.getRecordsByWard(parsedWardId),
+      ]);
 
-      const recordsList = (result as any).data ?? result ?? [];
+      console.log("리포트 조회 응답:", reportsResult);
+      console.log("오디오 레코드 조회 응답:", audioRecordsResult);
+
+      // 리포트 API는 배열을 직접 반환하거나 {data: [...]} 형식
+      const reportsList = (reportsResult as any).data ?? reportsResult ?? [];
+      const audioRecordsList = (audioRecordsResult as any).data ?? audioRecordsResult ?? [];
+
       console.log(
-        "조회된 레코드 수:",
-        Array.isArray(recordsList) ? recordsList.length : 0,
+        "조회된 리포트 수:",
+        Array.isArray(reportsList) ? reportsList.length : 0,
       );
-      setReports(Array.isArray(recordsList) ? recordsList : []);
+      console.log(
+        "조회된 오디오 레코드 수:",
+        Array.isArray(audioRecordsList) ? audioRecordsList.length : 0,
+      );
+
+      // 오디오 레코드를 recordId 기준으로 맵핑
+      const audioRecordsMap = new Map(
+        (Array.isArray(audioRecordsList) ? audioRecordsList : []).map(
+          (record: any) => [record.recordId, record]
+        )
+      );
+
+      // 리포트에 대응하는 오디오 레코드 정보 추가
+      const mergedReports = (Array.isArray(reportsList) ? reportsList : []).map(
+        (report: any) => ({
+          ...report,
+          // 오디오 레코드의 status와 uploadedAt 추가
+          status: audioRecordsMap.get(report.recordId)?.status || "unknown",
+          uploaded_at:
+            audioRecordsMap.get(report.recordId)?.uploadedAt ||
+            report.createdAt,
+        })
+      );
+
+      setReports(mergedReports);
     } catch (error) {
       console.error("리포트 조회 중 에러:", error);
       setReportsError(
@@ -164,7 +212,8 @@ export default function ListPage() {
 
     // 유효한 데이터만 필터링
     const validReports = reportsData.filter((report) => {
-      const dateString = report.created_at || report.uploaded_at || report.recordedAt;
+      const dateString =
+        report.created_at || report.uploaded_at || report.recordedAt;
       if (!dateString) return false;
 
       const date = new Date(dateString);
@@ -176,7 +225,8 @@ export default function ListPage() {
     });
 
     validReports.forEach((report) => {
-      const dateString = report.created_at || report.uploaded_at || report.recordedAt;
+      const dateString =
+        report.created_at || report.uploaded_at || report.recordedAt;
       const createdDate = new Date(dateString);
       const monthKey = createdDate.toLocaleDateString("ko-KR", {
         year: "numeric",
@@ -198,21 +248,19 @@ export default function ListPage() {
           return new Date(bDateStr).getTime() - new Date(aDateStr).getTime();
         }),
       }))
-      .sort(
-        (a, b) => {
-          const aDateStr =
-            a.reports[0]?.created_at ||
-            a.reports[0]?.uploaded_at ||
-            a.reports[0]?.recordedAt ||
-            "";
-          const bDateStr =
-            b.reports[0]?.created_at ||
-            b.reports[0]?.uploaded_at ||
-            b.reports[0]?.recordedAt ||
-            "";
-          return new Date(bDateStr).getTime() - new Date(aDateStr).getTime();
-        }
-      );
+      .sort((a, b) => {
+        const aDateStr =
+          a.reports[0]?.created_at ||
+          a.reports[0]?.uploaded_at ||
+          a.reports[0]?.recordedAt ||
+          "";
+        const bDateStr =
+          b.reports[0]?.created_at ||
+          b.reports[0]?.uploaded_at ||
+          b.reports[0]?.recordedAt ||
+          "";
+        return new Date(bDateStr).getTime() - new Date(aDateStr).getTime();
+      });
   };
 
   const handleReportClick = (recordId: number) => {
@@ -255,7 +303,8 @@ export default function ListPage() {
   const getReportDate = (report: any): string => {
     // audio_record 조회 시: uploaded_at 사용
     // report 조회 시: created_at 사용
-    const dateString = report.created_at || report.uploaded_at || report.recordedAt;
+    const dateString =
+      report.created_at || report.uploaded_at || report.recordedAt;
 
     if (!dateString) {
       return "날짜 정보 없음";
@@ -477,29 +526,44 @@ export default function ListPage() {
               </p>
             </div>
             {savedSurveyAnswers ? (
-              <div className="space-y-3">
-                {surveyQuestions.map((question, index) => (
-                  <div
-                    key={question}
-                    className="rounded-lg border border-gray-200 p-4 shadow-none"
-                  >
-                    <p className="text-sm text-foreground mb-2">{question}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">
-                        선택한 답변
-                      </span>
-                      <span className="text-base font-semibold text-[#4291F2]">
-                        {surveyScaleLabels[savedSurveyAnswers[index] ?? 2]}
-                      </span>
+              <>
+                <div className="space-y-3">
+                  {surveyQuestions.map((question, index) => (
+                    <div
+                      key={question}
+                      className="rounded-lg border border-gray-200 p-4 shadow-none"
+                    >
+                      <p className="text-sm text-foreground mb-2">{question}</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">
+                          선택한 답변
+                        </span>
+                        <span className="text-base font-semibold text-[#4291F2]">
+                          {surveyScaleLabels[savedSurveyAnswers[index] ?? 2]}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+                <Button
+                  onClick={() => router.push("/self-diagnosis")}
+                  className="w-full h-12 bg-[#4291F2] hover:bg-[#3182CE] text-white rounded-full shadow-none font-medium text-base mt-4"
+                >
+                  수정하기
+                </Button>
+              </>
             ) : (
-              <p className="text-sm text-muted-foreground text-center">
-                아직 저장된 자가진단표가 없습니다. 온보딩 또는 자가진단표
-                수정에서 입력해 주세요.
-              </p>
+              <>
+                <p className="text-sm text-muted-foreground text-center">
+                  아직 저장된 자가진단표가 없습니다.
+                </p>
+                <Button
+                  onClick={() => router.push("/self-diagnosis")}
+                  className="w-full h-12 bg-[#4291F2] hover:bg-[#3182CE] text-white rounded-full shadow-none font-medium text-base mt-4"
+                >
+                  자가진단표 작성하기
+                </Button>
+              </>
             )}
           </div>
         )}
