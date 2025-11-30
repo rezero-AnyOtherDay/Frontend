@@ -162,8 +162,22 @@ export default function ListPage() {
   const groupReportsByMonth = (reportsData: any[]) => {
     const grouped: Record<string, any[]> = {};
 
-    reportsData.forEach((report) => {
-      const createdDate = new Date(report.created_at || report.recordedAt);
+    // 유효한 데이터만 필터링
+    const validReports = reportsData.filter((report) => {
+      const dateString = report.created_at || report.uploaded_at || report.recordedAt;
+      if (!dateString) return false;
+
+      const date = new Date(dateString);
+      if (isNaN(date.getTime()) || date.getFullYear() < 2000) {
+        console.warn("유효하지 않은 날짜 필터링됨:", dateString, report);
+        return false;
+      }
+      return true;
+    });
+
+    validReports.forEach((report) => {
+      const dateString = report.created_at || report.uploaded_at || report.recordedAt;
+      const createdDate = new Date(dateString);
       const monthKey = createdDate.toLocaleDateString("ko-KR", {
         year: "numeric",
         month: "long",
@@ -175,14 +189,30 @@ export default function ListPage() {
       grouped[monthKey].push(report);
     });
 
-    return Object.entries(grouped).map(([month, monthReports]) => ({
-      month,
-      reports: monthReports.sort(
-        (a, b) =>
-          new Date(b.created_at || b.recordedAt).getTime() -
-          new Date(a.created_at || a.recordedAt).getTime(),
-      ),
-    }));
+    return Object.entries(grouped)
+      .map(([month, monthReports]) => ({
+        month,
+        reports: monthReports.sort((a, b) => {
+          const aDateStr = a.created_at || a.uploaded_at || a.recordedAt;
+          const bDateStr = b.created_at || b.uploaded_at || b.recordedAt;
+          return new Date(bDateStr).getTime() - new Date(aDateStr).getTime();
+        }),
+      }))
+      .sort(
+        (a, b) => {
+          const aDateStr =
+            a.reports[0]?.created_at ||
+            a.reports[0]?.uploaded_at ||
+            a.reports[0]?.recordedAt ||
+            "";
+          const bDateStr =
+            b.reports[0]?.created_at ||
+            b.reports[0]?.uploaded_at ||
+            b.reports[0]?.recordedAt ||
+            "";
+          return new Date(bDateStr).getTime() - new Date(aDateStr).getTime();
+        }
+      );
   };
 
   const handleReportClick = (recordId: number) => {
@@ -223,7 +253,21 @@ export default function ListPage() {
   };
 
   const getReportDate = (report: any): string => {
-    const date = new Date(report.created_at || report.recordedAt);
+    // audio_record 조회 시: uploaded_at 사용
+    // report 조회 시: created_at 사용
+    const dateString = report.created_at || report.uploaded_at || report.recordedAt;
+
+    if (!dateString) {
+      return "날짜 정보 없음";
+    }
+
+    const date = new Date(dateString);
+
+    // 유효한 날짜 확인 (1970년 이상)
+    if (isNaN(date.getTime()) || date.getFullYear() < 2000) {
+      return "날짜 정보 없음";
+    }
+
     return date.toLocaleDateString("ko-KR", {
       month: "2-digit",
       day: "2-digit",

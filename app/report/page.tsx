@@ -64,19 +64,36 @@ export default function ReportPage() {
 
         if (response.ok) {
           const result = await response.json();
-          console.log("응답 본문:", result);
+          console.log("응답 본문 (원본):", result);
 
-          let analysis = result.data?.analysisResult || result.data;
-          console.log("분석 결과 (파싱 전):", analysis);
+          // 응답 형식이 다양할 수 있으므로 대응
+          let analysisResult = result.analysisResult || result.data?.analysisResult;
+          console.log("분석 결과 (파싱 전):", analysisResult);
 
-          if (typeof analysis === "string") {
-            analysis = JSON.parse(analysis);
+          // analysisResult가 JSON 문자열인 경우 파싱
+          if (typeof analysisResult === "string") {
+            try {
+              analysisResult = JSON.parse(analysisResult);
+              console.log("분석 결과 (파싱 후):", analysisResult);
+            } catch (parseError) {
+              console.error("JSON 파싱 실패:", parseError);
+              console.error("원본 문자열:", analysisResult);
+              setLoading(false);
+              return;
+            }
           }
-          console.log("분석 결과 (파싱 후):", analysis);
 
-          setReportData(analysis);
+          // 필수 필드 검증
+          if (!analysisResult.accuracy) {
+            console.error("accuracy 필드 없음");
+            setLoading(false);
+            return;
+          }
+
+          console.log("최종 분석 데이터:", analysisResult);
+          setReportData(analysisResult);
         } else {
-          console.error("보고서 조회 실패:", response.status);
+          console.error("보고서 조회 실패:", response.status, response.statusText);
         }
       } catch (error) {
         console.error("보고서 로드 중 에러:", error);

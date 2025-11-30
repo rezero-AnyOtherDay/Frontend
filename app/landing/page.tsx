@@ -225,17 +225,17 @@ export default function LandingPage() {
         "어지러워 서있기나 걷기가 어려운 순간이 있다",
       ];
 
-      // 질문과 답변을 매핑한 객체 생성
-      const surveyMap: Record<string, number> = {};
-      questions.forEach((question, index) => {
-        surveyMap[question] = surveyAnswers[index];
-      });
+      // 질문과 답변을 배열로 생성
+      const questionAnswerPairs = questions.map((question, index) => ({
+        text: question,
+        answer: surveyAnswers[index],
+      }));
 
       // 설문 답변을 diagnosis JSON으로 포맷팅
       const diagnosisData = {
         answered: true,
-        survey: surveyMap,
         completedAt: new Date().toISOString(),
+        questions: questionAnswerPairs,
       };
 
       await wardAPI.updateDiagnosis(wardId, diagnosisData);
