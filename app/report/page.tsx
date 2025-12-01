@@ -7,10 +7,12 @@ import AppLayout from "@/components/layout/AppLayout";
 
 interface DiagnoseResponse {
   accuracy?: number[];
-  asr?: string;
-  risk?: string[];
-  explain?: string[];
-  summary?: string;
+  ASR?: string;      // 통화 전사 데이터
+  asr?: string;      // 호환성 (소문자)
+  risk?: string[];   // ["뇌졸중 위험도", "치매 위험도", "파킨슨병 위험도", "루게릭병 위험도"]
+  explain?: string[]; // ["뇌졸중 설명", "치매 설명", "파킨슨병 설명", "루게릭병 설명"]
+  total?: string;    // 종합 소견 (3문장, 75자 내외)
+  summary?: string;  // 과거~현재 200자 요약 (DB에 저장용)
 }
 
 const diseaseNames = ["뇌졸중", "퇴행성 뇌질환", "정상"];
@@ -208,7 +210,7 @@ export default function ReportPage() {
         {/* Results Summary Card - 종합소견만 */}
         <div className="bg-white p-5 rounded-md shadow-none mb-4">
           <p className="text-sm text-foreground">
-            종합 소견: {reportData.summary || "분석 결과를 기다리고 있습니다."}
+            종합 소견: {reportData.total || reportData.summary || "분석 결과를 기다리고 있습니다."}
           </p>
         </div>
 
@@ -343,13 +345,13 @@ export default function ReportPage() {
         )}
 
         {/* ASR Content */}
-        {reportData.asr && (
+        {(reportData.ASR || reportData.asr) && (
           <div className="bg-white p-5 rounded-md shadow-none mb-4">
             <h3 className="text-base font-bold text-[#4291F2] mb-3">
               음성 분석 결과
             </h3>
             <p className="text-sm text-foreground whitespace-pre-wrap">
-              {reportData.asr}
+              {reportData.ASR || reportData.asr}
             </p>
           </div>
         )}

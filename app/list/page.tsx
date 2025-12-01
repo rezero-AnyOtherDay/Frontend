@@ -320,7 +320,8 @@ export default function ListPage() {
           typeof report.analysisResult === "string"
             ? JSON.parse(report.analysisResult)
             : report.analysisResult;
-        return analysis.summary || "분석 중...";
+        // total (종합 소견)을 우선적으로 사용, 없으면 summary 사용
+        return analysis.total || analysis.summary || "분석 중...";
       } catch (error) {
         return "분석 결과 표시 중...";
       }
