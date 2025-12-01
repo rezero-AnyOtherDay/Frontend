@@ -160,7 +160,8 @@ export default function ListPage() {
 
       // 리포트 API는 배열을 직접 반환하거나 {data: [...]} 형식
       const reportsList = (reportsResult as any).data ?? reportsResult ?? [];
-      const audioRecordsList = (audioRecordsResult as any).data ?? audioRecordsResult ?? [];
+      const audioRecordsList =
+        (audioRecordsResult as any).data ?? audioRecordsResult ?? [];
 
       console.log(
         "조회된 리포트 수:",
@@ -174,8 +175,8 @@ export default function ListPage() {
       // 오디오 레코드를 recordId 기준으로 맵핑
       const audioRecordsMap = new Map(
         (Array.isArray(audioRecordsList) ? audioRecordsList : []).map(
-          (record: any) => [record.recordId, record]
-        )
+          (record: any) => [record.recordId, record],
+        ),
       );
 
       // 리포트에 대응하는 오디오 레코드 정보 추가
@@ -187,7 +188,7 @@ export default function ListPage() {
           uploaded_at:
             audioRecordsMap.get(report.recordId)?.uploadedAt ||
             report.createdAt,
-        })
+        }),
       );
 
       setReports(mergedReports);
@@ -268,6 +269,50 @@ export default function ListPage() {
     router.push("/report");
   };
 
+  const getRiskLevel = (accuracy: number): string => {
+    if (accuracy >= 75) return "위험";
+    if (accuracy >= 50) return "주의";
+    if (accuracy >= 25) return "관찰";
+    return "정상";
+  };
+
+  const getReportTitle = (report: any, userName: string): string => {
+    if (report.analysisResult) {
+      try {
+        const analysis =
+          typeof report.analysisResult === "string"
+            ? JSON.parse(report.analysisResult)
+            : report.analysisResult;
+
+        if (!analysis.accuracy) {
+          return analysis.summary || "분석 중...";
+        }
+
+        // 가장 높은 퍼센트의 병명 찾기 (accuracy 기준)
+        let maxIdx = 0;
+        let maxAccuracy = analysis.accuracy[0] || 0;
+
+        analysis.accuracy.forEach((acc: number, idx: number) => {
+          if (acc > maxAccuracy) {
+            maxAccuracy = acc;
+            maxIdx = idx;
+          }
+        });
+
+        // accuracy 인덱스에 맞는 병명 매핑
+        const diseaseName =
+          maxIdx === 0 ? "뇌졸중" : maxIdx === 1 ? "퇴행성 뇌질환" : "정상";
+
+        return `${userName}님이 ${diseaseName}일 확률은\n${maxAccuracy.toFixed(
+          0,
+        )}%입니다.`;
+      } catch (error) {
+        return "분석 결과 표시 중...";
+      }
+    }
+    return "분석 대기 중...";
+  };
+
   const getReportSummary = (report: any): string => {
     if (report.analysisResult) {
       try {
@@ -283,20 +328,8 @@ export default function ListPage() {
     return "분석 대기 중...";
   };
 
-  const getReportAlert = (report: any): string | null => {
-    if (report.analysisResult) {
-      try {
-        const analysis =
-          typeof report.analysisResult === "string"
-            ? JSON.parse(report.analysisResult)
-            : report.analysisResult;
-        if (analysis.risk && analysis.risk.length > 0) {
-          return `위험질환: ${analysis.risk[0]}`;
-        }
-      } catch (error) {
-        // Return null if parsing fails
-      }
-    }
+  const getReportAlert = (_report: any): string | null => {
+    // 리스트 카드 상단의 "위험질환:" 문구는 사용하지 않음
     return null;
   };
 
@@ -501,10 +534,33 @@ export default function ListPage() {
                           </p>
                         )}
                         <div className="flex items-center justify-between">
-                          <p className="text-base text-foreground font-medium line-clamp-2">
-                            {getReportSummary(report)}
-                          </p>
-                          <ChevronRight className="w-5 h-5 text-[#979EA1] flex-shrink-0 ml-2" />
+                          <div className="flex-1">
+                            {(() => {
+                              const title = getReportTitle(
+                                report,
+                                savedUserName || "사용자",
+                              );
+                              const lines = title.split("\n");
+                              if (lines.length >= 2) {
+                                return (
+                                  <>
+                                    <p className="text-base text-foreground font-medium">
+                                      {lines[0]}
+                                    </p>
+                                    <p className="text-base text-[#4291F2] font-medium">
+                                      {lines[1]}
+                                    </p>
+                                  </>
+                                );
+                              }
+                              return (
+                                <p className="text-base text-foreground font-medium">
+                                  {title}
+                                </p>
+                              );
+                            })()}
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-[#979EA1] shrink-0 ml-2" />
                         </div>
                       </div>
                     ))}
