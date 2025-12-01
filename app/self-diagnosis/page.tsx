@@ -113,6 +113,8 @@ export default function SelfDiagnosisPage() {
       const fromHome = localStorage.getItem("showSelfDiagnosis");
       if (fromHome === "true") {
         localStorage.removeItem("showSelfDiagnosis");
+        // 자가진단표 수정 후 홈으로 돌아가면서 AI 호출을 시작하도록 플래그 설정
+        localStorage.setItem("startAIAfterDiagnosis", "true");
         router.push("/");
       } else {
         router.push("/list");

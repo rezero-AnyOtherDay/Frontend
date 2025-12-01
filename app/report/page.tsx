@@ -229,34 +229,38 @@ export default function ReportPage() {
     reportData.total || reportData.summary || "",
   );
 
-  // 가장 높은 퍼센트의 병명 찾기
-  const getHighestRiskDisease = () => {
+  // 제목 표시 로직: 정상이 가장 높으면 정상일 확률, 아니면 뇌질환일 확률 표시
+  const getTitleDisplay = () => {
     if (!reportData.accuracy) return null;
 
-    let maxIdx = 0;
-    let maxAccuracy = reportData.accuracy[0] || 0;
+    const normalAccuracy = reportData.accuracy[2] || 0;
+    const diseaseAccuracy = reportData.accuracy[0] || 0; // 뇌졸중
+    const secondaryAccuracy = reportData.accuracy[1] || 0; // 퇴행성 뇌질환
 
-    reportData.accuracy.forEach((acc, idx) => {
-      if (acc > maxAccuracy) {
-        maxAccuracy = acc;
-        maxIdx = idx;
-      }
-    });
+    // 정상이 질병들보다 높으면 정상 표시, 아니면 뇌질환 표시
+    const isNormalHighest =
+      normalAccuracy >= diseaseAccuracy && normalAccuracy >= secondaryAccuracy;
 
-    const diseaseName = diseaseNames[maxIdx] || "질환";
-
-    return {
-      disease: diseaseName,
-      accuracy: maxAccuracy,
-      riskLevel: getRiskLevel(maxAccuracy),
-    };
+    if (isNormalHighest) {
+      return {
+        disease: "정상",
+        accuracy: normalAccuracy,
+      };
+    } else {
+      // 뇌질환 (뇌졸중 + 퇴행성 뇌질환의 합)을 뇌질환으로 표시
+      const brainDiseaseAccuracy = diseaseAccuracy + secondaryAccuracy;
+      return {
+        disease: "뇌질환",
+        accuracy: brainDiseaseAccuracy,
+      };
+    }
   };
 
-  const highestRisk = getHighestRiskDisease();
+  const titleDisplay = getTitleDisplay();
 
-  // 정상 확률이 가장 높은지 여부
-  const isNormalHighest =
-    normalAccuracy >= primaryAccuracy && normalAccuracy >= secondaryAccuracy;
+  // 정상 확률이 가장 높은지 여부 (아래 카드 표시용)
+  // titleDisplay.disease가 "정상"이면 정상이 가장 높다는 뜻
+  const isNormalHighest = titleDisplay?.disease === "정상";
 
   return (
     <AppLayout
@@ -267,13 +271,18 @@ export default function ReportPage() {
       <div className="px-6 max-w-md mx_auto w-full tracking-[-0.04em]">
         {/* Main Result */}
         <div className="mb-6">
-          {highestRisk && (
+          {titleDisplay && (
             <>
               <h1 className="text-xl font-bold text-foreground">
-                {wardName}님이 {highestRisk.disease}일 확률은
+                {wardName}님이 {titleDisplay.disease}일 확률은
               </h1>
-              <p className="text-3xl font-bold text-[#4291F2] mt-2">
-                {highestRisk.accuracy.toFixed(0)}%입니다.
+              <p
+                className="text-3xl font-bold mt-2"
+                style={{
+                  color: titleDisplay.disease === "뇌질환" ? "#EF4444" : "#4291F2",
+                }}
+              >
+                {titleDisplay.accuracy.toFixed(0)}%입니다.
               </p>
             </>
           )}
@@ -298,39 +307,35 @@ export default function ReportPage() {
         {/* Analysis Results Card - 분석 결과 별도 문단 */}
         <div className="bg-white p-5 rounded-md shadow-none mb-4">
           <h3 className="text-base font-bold text-[#4291F2] mb-3">분석 결과</h3>
-          <div className="border border-gray-300">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-300">
-                  <th className="py-2 px-3 text-center font-medium">질환</th>
-                  <th className="py-2 px-3 text-center font-medium">정확도</th>
-                  <th className="py-2 px-3 text-center font-medium">위험도</th>
-                </tr>
-              </thead>
-              <tbody>
-                {reportData.accuracy?.map((acc, idx) => (
-                  <tr key={idx} className="border-b border-gray-300">
-                    <td className="py-2 px-3">
-                      {diseaseNames[idx] || `질환 ${idx}`}
-                    </td>
-                    <td className="py-2 px-3 text-center">{acc.toFixed(1)}%</td>
-                    <td className="py-2 px-3 text-center">
-                      {diseaseNames[idx] === "정상" ? (
-                        <span className="text-xs text-muted-foreground">-</span>
-                      ) : (
-                        <span
-                          className={`inline-block ${getRiskColor(
-                            acc,
-                          )} text-white text-xs px-2 py-1 rounded-md`}
-                        >
-                          {getRiskLevel(acc)}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-3">
+            {reportData.risk?.map((riskText, idx) => {
+              const diseaseNames4 = ["뇌졸중", "치매", "파킨슨", "루게릭"];
+              const disease = diseaseNames4[idx] || `질환 ${idx}`;
+
+              // riskText에서 색상 결정
+              const getRiskColorFromText = (text: string) => {
+                if (text.includes("위험")) return "bg-red-500";
+                if (text.includes("주의")) return "bg-orange-500";
+                if (text.includes("관찰")) return "bg-yellow-400";
+                return "bg-green-500";
+              };
+
+              return (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-md"
+                >
+                  <span className="font-medium text-foreground">{disease}</span>
+                  <span
+                    className={`inline-block ${getRiskColorFromText(
+                      riskText,
+                    )} text-white text-xs px-3 py-1 rounded-full font-semibold`}
+                  >
+                    {riskText}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -351,78 +356,88 @@ export default function ReportPage() {
             </div>
           </div>
         ) : (
-          allDiseases.map((diseaseName, idx) => {
-            const riskLevelText = reportData.risk?.[idx] || "정보 없음";
-            const explainText =
-              reportData.explain?.[idx] || `${diseaseName} 관련 설명입니다.`;
+          allDiseases
+            .map((diseaseName, idx) => {
+              const riskLevelText = reportData.risk?.[idx] || "정보 없음";
+              const explainText =
+                reportData.explain?.[idx] || `${diseaseName} 관련 설명입니다.`;
 
-            // explain 텍스트를 불렛 포맷으로 변환 (문장 기준)
-            const formatExplainAsBullets = (text: string) => {
-              // 문장 단위로 분리 (. ! ? 로 끝나는 문장)
-              const sentences = text
-                .split(/([.!?]\s+)/)
-                .filter((s) => s.trim().length > 0 && !/^[.!?]\s*$/.test(s))
-                .map((s) => s.trim())
-                .filter((s) => s.length > 0);
+              // explain 텍스트를 불렛 포맷으로 변환 (문장 기준)
+              const formatExplainAsBullets = (text: string) => {
+                // 문장 단위로 분리 (. ! ? 로 끝나는 문장)
+                const sentences = text
+                  .split(/([.!?]\s+)/)
+                  .filter((s) => s.trim().length > 0 && !/^[.!?]\s*$/.test(s))
+                  .map((s) => s.trim())
+                  .filter((s) => s.length > 0);
 
-              // 문장이 없으면 원본 텍스트를 불렛으로 표시
-              if (sentences.length === 0) {
-                return (
-                  <div className="flex items-start mb-2">
+                // 문장이 없으면 원본 텍스트를 불렛으로 표시
+                if (sentences.length === 0) {
+                  return (
+                    <div className="flex items-start mb-2">
+                      <span className="text-foreground mr-2 mt-1">•</span>
+                      <span className="text-sm text-foreground flex-1">
+                        {text}
+                      </span>
+                    </div>
+                  );
+                }
+
+                return sentences.map((sentence, i) => (
+                  <div key={i} className="flex items-start mb-2">
                     <span className="text-foreground mr-2 mt-1">•</span>
                     <span className="text-sm text-foreground flex-1">
-                      {text}
+                      {sentence}
                     </span>
                   </div>
-                );
-              }
+                ));
+              };
 
-              return sentences.map((sentence, i) => (
-                <div key={i} className="flex items-start mb-2">
-                  <span className="text-foreground mr-2 mt-1">•</span>
-                  <span className="text-sm text-foreground flex-1">
-                    {sentence}
-                  </span>
-                </div>
-              ));
-            };
+              // risk 텍스트 기반 색상 매핑
+              const getRiskColorByText = (level: string) => {
+                if (level.includes("위험")) return "bg-red-500";
+                if (level.includes("주의")) return "bg-orange-500";
+                if (level.includes("관찰")) return "bg-yellow-400";
+                return "bg-green-500";
+              };
 
-            // risk 텍스트 기반 색상 매핑
-            const getRiskColorByText = (level: string) => {
-              if (level.includes("위험")) return "bg-red-500";
-              if (level.includes("주의")) return "bg-orange-500";
-              if (level.includes("관찰")) return "bg-yellow-400";
-              return "bg-green-500";
-            };
-
-            return (
+              return {
+                idx,
+                diseaseName,
+                riskLevelText,
+                explainText,
+                formatExplainAsBullets,
+                getRiskColorByText,
+              };
+            })
+            .filter((item) => !item.riskLevelText.includes("정상"))
+            .map((item) => (
               <div
-                key={idx}
+                key={item.idx}
                 className="bg-white p-5 rounded-md shadow-none mb-4"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="w-full">
                     <span
-                      className={`inline-block ${getRiskColorByText(
-                        riskLevelText,
+                      className={`inline-block ${item.getRiskColorByText(
+                        item.riskLevelText,
                       )} text-white text-xs px-3 py-1 rounded-full mb-2 shadow-none`}
                     >
-                      위험도 {riskLevelText}
+                      위험도 {item.riskLevelText}
                     </span>
                     <h3 className="text-lg font-bold text-foreground">
-                      {diseaseName}
+                      {item.diseaseName}
                     </h3>
                   </div>
                 </div>
                 <div className="text-sm text-foreground mb-3">
-                  {formatExplainAsBullets(explainText)}
+                  {item.formatExplainAsBullets(item.explainText)}
                 </div>
                 <button className="w-full h-10 bg-[#4291F2] text-white rounded-full shadow-none font-medium text-sm hover:bg-[#3182CE] transition-colors">
                   상담하러가기
                 </button>
               </div>
-            );
-          })
+            ))
         )}
 
         {/* Recommended Follow-up Actions Section */}

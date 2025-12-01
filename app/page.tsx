@@ -40,7 +40,9 @@ export default function HomePage() {
       const storedUserName = localStorage.getItem("userName");
       const storedRecordId = localStorage.getItem("recordId");
       const storedHasCheckedReport = localStorage.getItem("hasCheckedReport");
-      const storedLatestDisease = localStorage.getItem("latestDiseaseName");
+      const startAIAfterDiagnosis = localStorage.getItem(
+        "startAIAfterDiagnosis",
+      );
 
       console.log("localStorage에서 로드:");
       console.log("- wardId:", storedWardId);
@@ -59,17 +61,97 @@ export default function HomePage() {
         if (!Number.isNaN(parsedRecordId)) {
           setRecordId(parsedRecordId);
           console.log("recordId 설정됨:", parsedRecordId);
+
+          // 자가진단표 수정 후 돌아온 경우, AI 호출 시작
+          if (startAIAfterDiagnosis === "true") {
+            localStorage.removeItem("startAIAfterDiagnosis");
+            console.log("=== 자가진단표 수정 완료, AI 처리 대기 시작 ===");
+            setShowAlert(true);
+            setIsCheckingReport(true);
+            pollReportCompletion(parsedRecordId);
+          }
         }
       }
-      if (storedLatestDisease) {
-        setRecentStatus(storedLatestDisease);
-        console.log("최근 대표 질병 설정됨:", storedLatestDisease);
-      }
+      // latestDiseaseName은 리포트가 실제로 존재할 때만 표시
+      // 초기 로드시에는 설정하지 않음 (아래 리포트 조회에서 설정됨)
       if (storedHasCheckedReport === "true") {
         setHasCheckedReport(true);
       }
     }
   }, []);
+
+  // 홈 페이지 로드 시 가장 최근 리포트 조회
+  useEffect(() => {
+    if (!wardId) return;
+
+    const fetchLatestReport = async () => {
+      try {
+        console.log("=== 가장 최근 리포트 조회 ===");
+        const reportsUrl = `${process.env.NEXT_PUBLIC_API_URL}/reports/ward/${wardId}`;
+        const response = await fetch(reportsUrl);
+
+        if (response.ok) {
+          const result = await response.json();
+          const reports = result.data || result;
+
+          // 가장 최근 리포트 선택
+          if (Array.isArray(reports) && reports.length > 0) {
+            const latestReport = reports[0];
+            console.log("가장 최근 리포트:", latestReport);
+
+            // 리포트 데이터에서 질병 정보 추출
+            try {
+              let analysisResult =
+                latestReport.analysisResult ||
+                latestReport.data?.analysisResult;
+
+              if (typeof analysisResult === "string") {
+                analysisResult = JSON.parse(analysisResult);
+              }
+
+              const accuracy = analysisResult?.accuracy;
+              if (accuracy && Array.isArray(accuracy) && accuracy.length > 0) {
+                const normalAccuracy = accuracy[2] || 0;
+                const diseaseAccuracy = accuracy[0] || 0;
+                const secondaryAccuracy = accuracy[1] || 0;
+
+                const isNormalHighest =
+                  normalAccuracy >= diseaseAccuracy &&
+                  normalAccuracy >= secondaryAccuracy;
+
+                let displayDisease: string;
+                if (isNormalHighest) {
+                  displayDisease = "정상";
+                } else {
+                  displayDisease = "뇌질환";
+                }
+
+                setRecentStatus(displayDisease);
+                setLatestReport(latestReport);
+                console.log("최근 상태 설정됨:", displayDisease);
+              }
+            } catch (error) {
+              console.error("최근 리포트 분석 중 오류:", error);
+            }
+          } else {
+            console.log("리포트 없음");
+            setRecentStatus(null);
+            setLatestReport(null);
+          }
+        } else {
+          console.warn("최근 리포트 조회 실패:", response.status);
+          setRecentStatus(null);
+          setLatestReport(null);
+        }
+      } catch (error) {
+        console.error("최근 리포트 조회 중 오류:", error);
+        setRecentStatus(null);
+        setLatestReport(null);
+      }
+    };
+
+    fetchLatestReport();
+  }, [wardId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -136,14 +218,13 @@ export default function HomePage() {
         // 새 리포트 업로드 시, 아직 리포트를 확인하지 않은 상태로 리셋
         setHasCheckedReport(false);
         localStorage.setItem("hasCheckedReport", "false");
-        setShowAlert(true);
 
         setShowUploadModal(false);
         setSelectedFile(null);
 
-        console.log("=== AI 처리 대기 시작 ===");
-        setIsCheckingReport(true);
-        await pollReportCompletion(newRecordId);
+        // 업로드 완료 후 자가진단표 수정 팝업 표시 (AI 호출은 팝업에서 "넘어가기" 버튼을 눌렀을 때 실행)
+        console.log("=== 음성 업로드 완료, 자가진단표 수정 팝업 표시 ===");
+        setShowDiagnosisModal(true);
       }
     } catch (error) {
       console.error("업로드 중 에러 발생:", error);
@@ -222,32 +303,35 @@ export default function HomePage() {
 
               const accuracy: number[] | undefined = analysisResult?.accuracy;
               if (accuracy && Array.isArray(accuracy) && accuracy.length > 0) {
-                let maxIdx = 0;
-                let maxAccuracy = accuracy[0] || 0;
+                const normalAccuracy = accuracy[2] || 0;
+                const diseaseAccuracy = accuracy[0] || 0; // 뇌졸중
+                const secondaryAccuracy = accuracy[1] || 0; // 퇴행성 뇌질환
 
-                accuracy.forEach((acc, idx) => {
-                  if (acc > maxAccuracy) {
-                    maxAccuracy = acc;
-                    maxIdx = idx;
-                  }
-                });
+                // 정상이 질병들보다 높으면 정상 표시, 아니면 뇌질환 표시
+                const isNormalHighest =
+                  normalAccuracy >= diseaseAccuracy &&
+                  normalAccuracy >= secondaryAccuracy;
 
-                const diseaseNames = ["뇌졸중", "퇴행성 뇌질환", "정상"];
-                const diseaseName = diseaseNames[maxIdx] || "질환";
+                let displayDisease: string;
+                if (isNormalHighest) {
+                  displayDisease = "정상";
+                } else {
+                  displayDisease = "뇌질환";
+                }
 
-                setRecentStatus(diseaseName);
+                setRecentStatus(displayDisease);
                 if (typeof window !== "undefined") {
-                  localStorage.setItem("latestDiseaseName", diseaseName);
+                  localStorage.setItem("latestDiseaseName", displayDisease);
                 }
               }
             } catch (error) {
               console.error("홈 화면 대표 질병 계산 중 오류:", error);
             }
 
-            // AI 처리 완료 후 자가진단 수정 팝업 표시
-            setShowDiagnosisModal(true);
+            // AI 처리 완료 후 분석 결과 확인 모달 표시
             setIsCheckingReport(false);
-            console.log("=== AI 처리 완료, 자가진단 수정 팝업 표시 ===");
+            setShowConfirmModal(true);
+            console.log("=== AI 처리 완료, 분석 결과 확인 모달 표시 ===");
             return;
           } else {
             console.warn("리포트 조회 실패:", reportResponse.status);
@@ -284,7 +368,12 @@ export default function HomePage() {
         />
       </div>
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" className="p-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="p-0"
+          onClick={() => router.push("/mypage")}
+        >
           <Image
             src="/icons/home/home-mypage.svg"
             alt="마이페이지"
@@ -358,8 +447,17 @@ export default function HomePage() {
                     최근 {userName ? `${userName}님의` : ""} 상태는
                   </h2>
                   <h2 className="font-bold" style={{ fontSize: "28px" }}>
-                    <span className="text-primary">{recentStatus}</span>
-                    <span style={{ color: "#303233" }}>이 의심돼요</span>
+                    {recentStatus === "정상" ? (
+                      <>
+                        <span className="text-primary">정상</span>
+                        <span style={{ color: "#303233" }}>이에요</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-primary">{recentStatus}</span>
+                        <span style={{ color: "#303233" }}>이 의심돼요</span>
+                      </>
+                    )}
                   </h2>
                 </>
               ) : (
@@ -555,7 +653,14 @@ export default function HomePage() {
               <Button
                 onClick={() => {
                   setShowDiagnosisModal(false);
-                  setShowConfirmModal(true);
+                  setShowAlert(true);
+                  setIsCheckingReport(true);
+                  console.log(
+                    "=== 자가진단표 수정 스킵, AI 처리 대기 시작 ===",
+                  );
+                  if (recordId) {
+                    pollReportCompletion(recordId);
+                  }
                 }}
                 variant="outline"
                 className="w-full h-12 border-[#D0DCFF] text-primary hover:bg-[#F5F8FE] font-semibold rounded-full shadow-none text-base"

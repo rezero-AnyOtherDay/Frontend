@@ -288,22 +288,26 @@ export default function ListPage() {
           return analysis.summary || "분석 중...";
         }
 
-        // 가장 높은 퍼센트의 병명 찾기 (accuracy 기준)
-        let maxIdx = 0;
-        let maxAccuracy = analysis.accuracy[0] || 0;
+        const normalAccuracy = analysis.accuracy[2] || 0;
+        const diseaseAccuracy = analysis.accuracy[0] || 0; // 뇌졸중
+        const secondaryAccuracy = analysis.accuracy[1] || 0; // 퇴행성 뇌질환
 
-        analysis.accuracy.forEach((acc: number, idx: number) => {
-          if (acc > maxAccuracy) {
-            maxAccuracy = acc;
-            maxIdx = idx;
-          }
-        });
+        // 정상이 질병들보다 높으면 정상 표시, 아니면 뇌질환 표시
+        const isNormalHighest =
+          normalAccuracy >= diseaseAccuracy && normalAccuracy >= secondaryAccuracy;
 
-        // accuracy 인덱스에 맞는 병명 매핑
-        const diseaseName =
-          maxIdx === 0 ? "뇌졸중" : maxIdx === 1 ? "퇴행성 뇌질환" : "정상";
+        let titleDisease: string;
+        let titleAccuracy: number;
 
-        return `${userName}님이 ${diseaseName}일 확률은\n${maxAccuracy.toFixed(
+        if (isNormalHighest) {
+          titleDisease = "정상";
+          titleAccuracy = normalAccuracy;
+        } else {
+          titleDisease = "뇌질환";
+          titleAccuracy = diseaseAccuracy + secondaryAccuracy;
+        }
+
+        return `${userName}님이 ${titleDisease}일 확률은\n${titleAccuracy.toFixed(
           0,
         )}%입니다.`;
       } catch (error) {
