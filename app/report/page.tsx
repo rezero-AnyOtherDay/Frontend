@@ -183,7 +183,7 @@ export default function ReportPage() {
   }, []);
 
   const headerContent = (
-    <div className="px-4 py-3 max-w-md mx-auto">
+    <div className="px-6 py-3 max-w-md mx-auto">
       <button
         onClick={() => router.push("/")}
         className="text-foreground text-base w-12 h-12 flex items-center justify-center"
@@ -264,7 +264,7 @@ export default function ReportPage() {
       headerContent={headerContent}
       showNavigation={false}
     >
-      <div className="px-4 py-4 max-w-md mx_auto w-full tracking-[-0.04em]">
+      <div className="px-6 max-w-md mx_auto w-full tracking-[-0.04em]">
         {/* Main Result */}
         <div className="mb-6">
           {highestRisk && (
@@ -426,7 +426,7 @@ export default function ReportPage() {
         )}
 
         {/* Recommended Follow-up Actions Section */}
-        <div className="bg-[#4291F2] px-4 py-8 max-w-md mx-auto w-full">
+        <div className="bg-[#4291F2] px-6 py-8 max-w-md mx-auto w-full">
           <h2 className="text-xl font-bold text-white text-center mb-6">
             권장 후속조치
           </h2>

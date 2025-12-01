@@ -8,7 +8,7 @@ interface Step5Props {
 
 export default function Step5({ onUpload, onSkip, userName }: Step5Props) {
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-between bg-white px-4 py-12 max-w-md mx-auto">
+    <div className="flex min-h-dvh w-full flex-col items-center justify-between bg-white px-6 py-12 max-w-md mx-auto">
       <div className="flex flex-1 items-center justify-center">
         <div className="text-center">
           <p className="text-[22px] leading-snug font-extrabold text-[#979EA1]">

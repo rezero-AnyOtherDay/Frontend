@@ -17,7 +17,7 @@ export default function AppLayout({
   showNavigation = true,
 }: AppLayoutProps) {
   return (
-    <div className="w-full h-screen flex flex-col max-w-md mx-auto bg-background">
+    <div className="w-full min-h-dvh flex flex-col max-w-md mx-auto bg-background">
       {/* Header */}
       {hasHeader && headerContent && (
         <header className="sticky top-0 z-40 bg-background shrink-0">
@@ -25,8 +25,12 @@ export default function AppLayout({
         </header>
       )}
 
-      {/* Main Content - scrollable area with bottom padding for navigation */}
-      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-20">
+      {/* Main Content - scrollable area with optional bottom padding for navigation */}
+      <main
+        className={`flex-1 overflow-y-auto overflow-x-hidden ${
+          showNavigation ? "pb-20" : "pb-0"
+        }`}
+      >
         {children}
       </main>
 

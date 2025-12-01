@@ -91,7 +91,7 @@ export default function Step3({
   };
 
   return (
-    <div className="flex h-screen w-full flex-col items-center bg-linear-to-b from-[#F7FAFF] to-white px-5 py-12 max-w-md mx-auto">
+    <div className="flex min-h-dvh w-full flex-col items-center bg-linear-to-b from-[#F7FAFF] to-white px-6 py-12 max-w-md mx-auto">
       <div className="w-full max-w-sm space-y-10">
         <div className="text-center space-y-3">
           <p className="text-xl font-semibold text-[#9AA5BE]">

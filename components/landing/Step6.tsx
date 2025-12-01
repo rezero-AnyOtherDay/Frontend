@@ -71,7 +71,7 @@ export default function Step6({ recordId, onNext, onPoll }: Step6Props) {
   }, [recordId, onNext, onPoll]);
 
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center bg-white px-4 max-w-md mx-auto">
+    <div className="flex min-h-dvh w-full flex-col items-center justify-center bg-white px-6 max-w-md mx-auto">
       <Image
         src="/icons/landing/landing-text17.svg"
         alt="AI 분석 중"

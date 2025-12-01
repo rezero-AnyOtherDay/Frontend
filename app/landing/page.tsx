@@ -73,9 +73,9 @@ export default function LandingPage() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [recordId, setRecordId] = useState<number | null>(null);
 
-  // Step 4 설문 답변 (20개 질문, 각 0-4 값, 기본 2=아니다)
+  // Step 4 설문 답변 (20개 질문, 각 0-4 값, 초기값 0)
   const [surveyAnswers, setSurveyAnswers] = useState<number[]>(
-    Array(20).fill(2),
+    Array(20).fill(0),
   );
 
   // 자동 진행 (Step 1, 2는 3초 후 자동 진행)
@@ -325,7 +325,7 @@ export default function LandingPage() {
   const canProceedFromStep4 = surveyAnswers.every((answer) => answer !== -1);
 
   return (
-    <div className="relative h-screen w-full overflow-hidden">
+    <div className="relative min-h-dvh w-full overflow-hidden">
       {/* Step 1 */}
       {currentStep === 1 && <Step1 />}
 
@@ -334,7 +334,7 @@ export default function LandingPage() {
 
       {/* Step 3 */}
       {currentStep === 3 && (
-        <div className="relative h-screen">
+        <div className="relative min-h-dvh">
           <Step3
             formData={formData}
             onFormChange={handleFormChange}
@@ -355,7 +355,7 @@ export default function LandingPage() {
 
       {/* Step 4 */}
       {currentStep === 4 && (
-        <div className="relative h-screen overflow-y-auto">
+        <div className="relative min-h-dvh overflow-y-auto">
           <Step4
             userName={formData.name}
             surveyAnswers={surveyAnswers}

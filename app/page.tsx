@@ -14,6 +14,7 @@ export default function HomePage() {
   const [showAlert, setShowAlert] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showDiagnosisModal, setShowDiagnosisModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploadingAudio, setIsUploadingAudio] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -243,9 +244,10 @@ export default function HomePage() {
               console.error("홈 화면 대표 질병 계산 중 오류:", error);
             }
 
-            setShowConfirmModal(true);
+            // AI 처리 완료 후 자가진단 수정 팝업 표시
+            setShowDiagnosisModal(true);
             setIsCheckingReport(false);
-            console.log("=== AI 처리 완료 ===");
+            console.log("=== AI 처리 완료, 자가진단 수정 팝업 표시 ===");
             return;
           } else {
             console.warn("리포트 조회 실패:", reportResponse.status);
@@ -305,7 +307,7 @@ export default function HomePage() {
 
   return (
     <AppLayout hasHeader={true} headerContent={headerContent}>
-      <div className="px-4 py-4 space-y-4 max-w-md mx-auto w-full">
+      <div className="px-6 py-4 space-y-4 max-w-md mx-auto w-full">
         {showAlert && (
           <Card
             className={`border-0 p-5 rounded-md shadow-none relative ${
@@ -456,38 +458,51 @@ export default function HomePage() {
                   </div>
                 )}
 
-                <div className="border-2 border-dashed border-border rounded-md p-8 text-center">
-                  <input
-                    type="file"
-                    accept="audio/*,.mp3,.wav,.m4a"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    id="audio-upload"
-                  />
-                  <label
-                    htmlFor="audio-upload"
-                    className="cursor-pointer flex flex-col items-center gap-3"
-                  >
-                    <Upload className="h-12 w-12 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        파일을 선택하세요
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        MP3, WAV, M4A 형식 지원
-                      </p>
-                    </div>
-                  </label>
-                </div>
+                {!selectedFile && (
+                  <div className="border-2 border-dashed border-border rounded-md p-8 text-center">
+                    <input
+                      type="file"
+                      accept="audio/*,.mp3,.wav,.m4a"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      id="audio-upload"
+                    />
+                    <label
+                      htmlFor="audio-upload"
+                      className="cursor-pointer flex flex-col items-center gap-3"
+                    >
+                      <Upload className="h-12 w-12 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          파일을 선택하세요
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          MP3, WAV, M4A 형식 지원
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                )}
 
                 {selectedFile && (
-                  <div className="bg-muted p-3 rounded-md">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {selectedFile.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
+                  <div className="bg-muted p-3 rounded-md flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {selectedFile.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setSelectedFile(null)}
+                      className="h-6 w-6 rounded-md shadow-none ml-2"
+                      title="파일 취소"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
                 )}
 
@@ -502,6 +517,51 @@ export default function HomePage() {
                   <span>{isUploadingAudio ? "업로드 중..." : "업로드"}</span>
                 </Button>
               </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {showDiagnosisModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="bg-white w-full max-w-sm p-8 rounded-md shadow-none space-y-6">
+            <div className="text-center space-y-3">
+              <h2 className="text-xl font-bold text-foreground">
+                자가진단표를 수정할까요?
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                더 정확한 진단을 위해 자가진단 결과를 수정해보세요.
+              </p>
+            </div>
+
+            <div className="bg-[#F5F8FE] p-4 rounded-md border border-[#D0DCFF]">
+              <p className="text-sm text-[#5A6F8F]">
+                자가진단표를 수정하고 저장하면, 새로운 분석 결과를 받을 수
+                있습니다.
+              </p>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <Button
+                onClick={() => {
+                  setShowDiagnosisModal(false);
+                  localStorage.setItem("showSelfDiagnosis", "true");
+                  router.push("/self-diagnosis");
+                }}
+                className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-semibold rounded-full shadow-none text-base"
+              >
+                수정하기
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowDiagnosisModal(false);
+                  setShowConfirmModal(true);
+                }}
+                variant="outline"
+                className="w-full h-12 border-[#D0DCFF] text-primary hover:bg-[#F5F8FE] font-semibold rounded-full shadow-none text-base"
+              >
+                넘어가기
+              </Button>
             </div>
           </Card>
         </div>

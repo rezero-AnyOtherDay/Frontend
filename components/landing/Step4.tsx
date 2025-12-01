@@ -53,7 +53,7 @@ export default function Step4({
   onAnswerChange,
 }: Step4Props) {
   return (
-    <div className="flex min-h-screen w-full flex-col bg-white px-4 py-12 max-w-md mx-auto">
+    <div className="flex min-h-dvh w-full flex-col bg-white px-6 py-12 max-w-md mx-auto">
       <h1 className="mb-8 text-center text-2xl font-bold text-[#9AA5BE]">
         요즘 {userName}님의 상태는 어떤가요?
       </h1>

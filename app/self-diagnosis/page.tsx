@@ -32,9 +32,9 @@ const questions = [
 
 export default function SelfDiagnosisPage() {
   const router = useRouter();
-  // Step 4 설문 답변 (20개 질문, 각 0-4 값)
+  // Step 4 설문 답변 (20개 질문, 각 0-4 값, 초기값 0)
   const [surveyAnswers, setSurveyAnswers] = useState<number[]>(
-    Array(20).fill(2)
+    Array(20).fill(0),
   );
   // 사용자 이름 (localStorage에서 가져오거나 기본값)
   const [userName, setUserName] = useState("");
@@ -108,11 +108,21 @@ export default function SelfDiagnosisPage() {
       await wardAPI.updateDiagnosis(wardId, diagnosisData);
 
       console.log("[Self-Diagnosis] Updated successfully:", diagnosisData);
-      router.push("/list");
+
+      // 홈에서 온 경우 (showSelfDiagnosis flag) 홈으로 돌아가기
+      const fromHome = localStorage.getItem("showSelfDiagnosis");
+      if (fromHome === "true") {
+        localStorage.removeItem("showSelfDiagnosis");
+        router.push("/");
+      } else {
+        router.push("/list");
+      }
     } catch (error) {
       console.error("자가진단 업데이트 중 오류 발생:", error);
       const message =
-        error instanceof Error ? error.message : "자가진단 업데이트에 실패했습니다.";
+        error instanceof Error
+          ? error.message
+          : "자가진단 업데이트에 실패했습니다.";
       setSubmitError(message);
     } finally {
       setIsSubmitting(false);
@@ -122,10 +132,10 @@ export default function SelfDiagnosisPage() {
   const canSubmit = surveyAnswers.every((answer) => answer !== -1);
 
   return (
-    <div className="min-h-screen w-full bg-background flex justify-center">
-      <div className="relative min-h-screen w-full max-w-md bg-background">
+    <div className="min-h-dvh w-full bg-background flex justify-center">
+      <div className="relative min-h-dvh w-full max-w-md bg-background">
         {/* 헤더 */}
-        <header className="sticky top-0 z-50 border-b bg-background/95 px-4 py-3 backdrop-blur">
+        <header className="sticky top-0 z-50 border-b bg-background/95 px-6 py-3 backdrop-blur">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -142,7 +152,7 @@ export default function SelfDiagnosisPage() {
         </header>
 
         {/* Step4 설문 컴포넌트 */}
-        <div className="relative min-h-[calc(100vh-72px)] overflow-y-auto">
+        <div className="relative min-h-[calc(100dvh-72px)] overflow-y-auto">
           <Step4
             userName={userName}
             surveyAnswers={surveyAnswers}
@@ -150,7 +160,7 @@ export default function SelfDiagnosisPage() {
           />
 
           {/* 하단 고정 버튼 */}
-          <div className="sticky bottom-0 border-t bg-white/95 backdrop-blur px-4 py-4">
+          <div className="sticky bottom-0 border-t bg-white/95 backdrop-blur px-6 py-4">
             {submitError && (
               <div className="mb-3 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
                 {submitError}

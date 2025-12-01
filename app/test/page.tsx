@@ -6,7 +6,7 @@ import AppLayout from '@/components/layout/AppLayout'
 export default function TestPage() {
   return (
     <AppLayout>
-      <div className="w-full h-full flex items-center justify-center px-4">
+      <div className="flex items-center justify-center px-4 py-60">
         <div className="text-center space-y-6">
           <div className="flex justify-center">
             <div className="bg-primary/10 rounded-full p-8">
