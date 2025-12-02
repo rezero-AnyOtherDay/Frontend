@@ -448,7 +448,7 @@ export default function LandingPage() {
 
                 {selectedFile && (
                   <div className="bg-muted p-3 rounded-md">
-                    <p className="text-sm font-medium text-foreground truncate">
+                    <p className="text-sm font-medium text-foreground truncate overflow-hidden">
                       {selectedFile.name}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">

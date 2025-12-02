@@ -215,8 +215,11 @@ export default function HomePage() {
         localStorage.setItem("recordId", newRecordId.toString());
         console.log("recordId를 localStorage에 저장함");
 
-        // 새 리포트 업로드 시, 아직 리포트를 확인하지 않은 상태로 리셋
+        // 새 리포트 업로드 시, 이전 리포트 상태 초기화
+        setLatestReport(null);
         setHasCheckedReport(false);
+        setShowAlert(false);
+        setIsCheckingReport(false);
         localStorage.setItem("hasCheckedReport", "false");
 
         setShowUploadModal(false);
@@ -482,7 +485,7 @@ export default function HomePage() {
               />
             </div>
 
-            {recentStatus && (
+            {recentStatus && recentStatus !== "정상" && (
               <Link href="/report">
                 <Card
                   className="bg-destructive border-0 p-3.5 rounded-md cursor-pointer hover:opacity-90 transition-opacity shadow-none"
@@ -584,8 +587,8 @@ export default function HomePage() {
 
                 {selectedFile && (
                   <div className="bg-muted p-3 rounded-md flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-foreground truncate">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate overflow-hidden">
                         {selectedFile.name}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
@@ -596,7 +599,7 @@ export default function HomePage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => setSelectedFile(null)}
-                      className="h-6 w-6 rounded-md shadow-none ml-2"
+                      className="h-6 w-6 rounded-md shadow-none ml-2 shrink-0"
                       title="파일 취소"
                     >
                       <X className="h-4 w-4" />
@@ -632,8 +635,8 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="bg-[#F5F8FE] p-4 rounded-md border border-[#D0DCFF]">
-              <p className="text-sm text-[#5A6F8F]">
+            <div className="bg-[#F5F8FE] p-6 rounded-md border border-[#D0DCFF]">
+              <p className="text-sm text-[#5A6F8F] text-center">
                 자가진단표를 수정하고 저장하면, 새로운 분석 결과를 받을 수
                 있습니다.
               </p>
